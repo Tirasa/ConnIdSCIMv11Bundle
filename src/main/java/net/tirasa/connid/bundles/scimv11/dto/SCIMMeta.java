@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,10 +28,10 @@ import org.identityconnectors.framework.common.objects.Attribute;
 public class SCIMMeta {
 
     @JsonProperty
-    private Date created;
+    private String created;
 
     @JsonProperty
-    private Date lastModified;
+    private String lastModified;
 
     @JsonProperty
     private String location;
@@ -43,19 +42,19 @@ public class SCIMMeta {
     @JsonProperty
     private List<String> attributes = new ArrayList<>();
 
-    public Date getCreated() {
+    public String getCreated() {
         return created;
     }
 
-    public void setCreated(final Date created) {
+    public void setCreated(final String created) {
         this.created = created;
     }
 
-    public Date getLastModified() {
+    public String getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(final Date lastModified) {
+    public void setLastModified(final String lastModified) {
         this.lastModified = lastModified;
     }
 
@@ -97,8 +96,8 @@ public class SCIMMeta {
 
     @Override
     public String toString() {
-        return "SCIMMeta{" + "created=" + created + ", lastModified=" + lastModified + ", location=" + location
-                + ", version=" + version + ", attributes=" + attributes + '}';
+        return "SCIMMeta{" + "created=" + created + ", lastModified=" + lastModified
+                + ", location=" + location + ", version=" + version + ", attributes=" + attributes + '}';
     }
 
 }

@@ -44,7 +44,7 @@ public class SCIMv11ConnectorTestsUtils {
     public static final String USER_ATTRIBUTE_PHONE_OTHER_PRIMARY = "phoneNumbers.other.primary";
 
     public static final String USER_ATTRIBUTE_PHONE_OTHER_OPERATION = "phoneNumbers.other.operation";
-    
+
     public static final String USER_ATTRIBUTE_ADDRESS_HOME_STREETADDRESS = "addresses.home.streetAddress";
 
     private static final Random RANDOM = new Random();
@@ -75,6 +75,9 @@ public class SCIMv11ConnectorTestsUtils {
                     break;
                 case "auth.customAttributesJSON":
                     connectorConfiguration.setCustomAttributesJSON(entry.getValue());
+                    break;
+                case "auth.updateMethod":
+                    connectorConfiguration.setUpdateMethod(entry.getValue());
                     break;
                 default:
                     LOG.info("Occurrence of an non defined parameter");

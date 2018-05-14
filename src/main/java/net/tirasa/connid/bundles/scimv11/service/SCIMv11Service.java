@@ -58,6 +58,8 @@ public class SCIMv11Service {
 
     private final String customAttributesJSON;
 
+    private final String updateMethod;
+
     public final static String RESPONSE_ERRORS = "Errors";
 
     public final static String RESPONSE_RESOURCES = "Resources";
@@ -69,7 +71,8 @@ public class SCIMv11Service {
             final String accept,
             final String contentType,
             final String bearer,
-            final String customAttributesJSON) {
+            final String customAttributesJSON,
+            final String updateMethod) {
         this.baseAddress = baseAddress;
         this.username = username;
         this.password = password;
@@ -77,6 +80,7 @@ public class SCIMv11Service {
         this.contentType = contentType;
         this.bearer = bearer;
         this.customAttributesJSON = customAttributesJSON;
+        this.updateMethod = updateMethod;
     }
 
     protected WebClient getWebclient(final String path, final Map<String, String> params) {
@@ -177,7 +181,9 @@ public class SCIMv11Service {
         JsonNode result = null;
         Response response = null;
         String payload;
-        WebClient.getConfig(webClient).getRequestContext().put("use.async.http.conduit", true);
+        if (updateMethod.equalsIgnoreCase("PATCH")) {
+            WebClient.getConfig(webClient).getRequestContext().put("use.async.http.conduit", true);
+        }
 
         try {
             // check custom attributes
@@ -196,7 +202,12 @@ public class SCIMv11Service {
                 // no custom attributes
                 payload = SCIMv11Utils.MAPPER.writeValueAsString(user);
             }
-            response = webClient.invoke("PATCH", payload);
+
+            if (updateMethod.equalsIgnoreCase("PATCH")) {
+                response = webClient.invoke("PATCH", payload);
+            } else {
+                response = webClient.put(payload);
+            }
 
             if (response == null) {
                 SCIMv11Utils.handleGeneralError("While updating User - no response");
@@ -241,9 +252,11 @@ public class SCIMv11Service {
     }
 
     private void checkServiceErrors(final JsonNode node, final Response response) {
-        if (node.has(RESPONSE_ERRORS)) {
-            String responseAsString = response.readEntity(String.class);
-            throw new RuntimeException(responseAsString);
+        if ((response.getStatus() != Status.OK.getStatusCode()
+                && response.getStatus() != Status.NO_CONTENT.getStatusCode()
+                && response.getStatus() != Status.CREATED.getStatusCode())
+                || node.has(RESPONSE_ERRORS)) {
+            throw new RuntimeException(response.readEntity(String.class));
         }
     }
 

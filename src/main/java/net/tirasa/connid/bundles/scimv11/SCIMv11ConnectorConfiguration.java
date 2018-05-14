@@ -46,6 +46,8 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
 
     private String customAttributesJSON;
 
+    private String updateMethod = "PATCH";
+
     private String accept = MediaType.APPLICATION_JSON;
 
     private String contentType = MediaType.APPLICATION_JSON;
@@ -122,6 +124,16 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
         this.customAttributesJSON = customAttributesJSON;
     }
 
+    @ConfigurationProperty(displayMessageKey = "updateMethod.display",
+            helpMessageKey = "updateMethod.help", order = 8)
+    public String getUpdateMethod() {
+        return updateMethod;
+    }
+
+    public void setUpdateMethod(final String updateMethod) {
+        this.updateMethod = updateMethod;
+    }
+
     @Override
     public void validate() {
         if (StringUtil.isBlank(baseAddress)) {
@@ -147,6 +159,11 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
                 failValidation("'customAttributesJSON' parameter must be a valid "
                         + "Resource Schema Representation JSON.");
             }
+        }
+        if (StringUtil.isNotBlank(updateMethod)
+                && !updateMethod.equalsIgnoreCase("PATCH")
+                && !updateMethod.equalsIgnoreCase("PUT")) {
+            failValidation("Update method is not valid; must be 'PUT' or 'PATCH'.");
         }
     }
 

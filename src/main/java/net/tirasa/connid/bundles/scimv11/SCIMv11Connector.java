@@ -89,7 +89,8 @@ public class SCIMv11Connector implements
                 this.configuration.getAccept(),
                 this.configuration.getContentType(),
                 this.configuration.getBearer(),
-                this.configuration.getCustomAttributesJSON()
+                this.configuration.getCustomAttributesJSON(),
+                this.configuration.getUpdateMethod()
         );
 
         LOG.ok("Connector {0} successfully inited", getClass().getName());
