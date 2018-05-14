@@ -40,9 +40,9 @@ public class SCIMv11Client extends SCIMv11Service {
             final String accept,
             final String contentType,
             final String bearer,
-            final String customAttributesJSON) {
-
-        super(baseAddress, username, password, accept, contentType, bearer, customAttributesJSON);
+            final String customAttributesJSON,
+            final String updateMethod) {
+        super(baseAddress, username, password, accept, contentType, bearer, customAttributesJSON, updateMethod);
     }
 
     /**

@@ -97,6 +97,7 @@ public class SCIMv11ConnectorTests {
             configurationParameters.put(name, PROPS.getProperty(name));
         }
         CONF = SCIMv11ConnectorTestsUtils.buildConfiguration(configurationParameters);
+        CONF.setUpdateMethod("PATCH");
 
         Boolean isValid = SCIMv11ConnectorTestsUtils.isConfigurationValid(CONF);
         if (isValid) {
@@ -146,6 +147,7 @@ public class SCIMv11ConnectorTests {
         assertNotNull(CONF.getAccept());
         assertNotNull(CONF.getContentType());
         assertNotNull(CONF.getCustomAttributesJSON());
+        assertNotNull(CONF.getUpdateMethod());
     }
 
     private static ConnectorFacade newFacade() {
@@ -453,6 +455,9 @@ public class SCIMv11ConnectorTests {
             readUsersServiceTest(client);
 
             updateUserServiceTest(testUser, client);
+
+            CONF.setUpdateMethod("PUT");
+            updateUserServiceTestPUT(testUser, newClient());
         } catch (Exception e) {
             LOG.error(e, "While running service test");
             fail(e.getMessage());
@@ -506,7 +511,8 @@ public class SCIMv11ConnectorTests {
 
         // want to remove an attribute
         String oldDisplayName = user.getDisplayName();
-        user.setDisplayName("Updated displayName");
+        String newDisplayName = "Updated displayName";
+        user.setDisplayName(newDisplayName);
         for (SCIMComplex<EmailCanonicalType> email : user.getEmails()) {
             if (email.getType().equals(EmailCanonicalType.other)) {
                 // Note that "value" and "primary" must also be the same of current attribute in order to proceed with deletion
@@ -527,12 +533,34 @@ public class SCIMv11ConnectorTests {
         User updated = client.updateUser(user);
         assertNotNull(updated);
         assertFalse(updated.getDisplayName().equals(oldDisplayName));
-        LOG.info("Updated user : {0}", updated);
+        assertEquals(updated.getDisplayName(), newDisplayName);
+        LOG.info("Updated user with PATCH: {0}", updated);
 
         // test removed attribute
         for (SCIMComplex<EmailCanonicalType> email : updated.getEmails()) {
             assertNotEquals(email.getType(), EmailCanonicalType.other);
         }
+
+        return updated;
+    }
+
+    private User updateUserServiceTestPUT(final String userId, final SCIMv11Client client) {
+        User user = client.getUser(userId);
+        assertNotNull(user);
+        assertNotNull(user.getDisplayName());
+        assertFalse(user.getDisplayName().isEmpty());
+
+        // want to remove an attribute
+        String oldDisplayName = user.getDisplayName();
+        String newDisplayName = "Updated displayName2";
+        user.setDisplayName(newDisplayName);
+        user.setMeta(null); // no need
+
+        User updated = client.updateUser(user);
+        assertNotNull(updated);
+        assertFalse(updated.getDisplayName().equals(oldDisplayName));
+        assertEquals(updated.getDisplayName(), newDisplayName);
+        LOG.info("Updated user with PUT: {0}", updated);
 
         return updated;
     }
