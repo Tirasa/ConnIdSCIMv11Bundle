@@ -330,9 +330,14 @@ public class SCIMv11Connector implements
             Uid returnUid = uid;
 
             Attribute status = accessor.find(OperationalAttributes.ENABLE_NAME);
+            String username = accessor.findString(SCIMv11Attributes.USER_ATTRIBUTE_USERNAME);
+            if (username == null) {
+                username = accessor.findString(Name.NAME);
+            }
 
             User user = new User();
             user.setId(uid.getUidValue());
+            user.setUserName(username);
 
             if (status == null
                     || status.getValue() == null
