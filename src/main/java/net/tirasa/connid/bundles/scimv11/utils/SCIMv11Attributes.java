@@ -22,6 +22,7 @@ import net.tirasa.connid.bundles.scimv11.SCIMv11Connector;
 import net.tirasa.connid.bundles.scimv11.dto.SCIMAttribute;
 import net.tirasa.connid.bundles.scimv11.dto.SCIMSchema;
 import net.tirasa.connid.bundles.scimv11.service.SCIMv11Service;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.framework.common.objects.AttributeBuilder;
 import org.identityconnectors.framework.common.objects.AttributeInfoBuilder;
 import org.identityconnectors.framework.common.objects.Name;
@@ -238,7 +239,7 @@ public final class SCIMv11Attributes {
                 .setMultiValued(true).build());
 
         // custom attributes
-        if (!customAttributes.isEmpty()) {
+        if (StringUtil.isNotBlank(customAttributes)) {
             SCIMSchema scimSchema = SCIMv11Service.extractSCIMSchemas(customAttributes);
             if (scimSchema != null && !scimSchema.getAttributes().isEmpty()) {
                 for (SCIMAttribute attribute : scimSchema.getAttributes()) {
