@@ -21,7 +21,8 @@ import java.net.URL;
 import javax.ws.rs.core.MediaType;
 import net.tirasa.connid.bundles.scimv11.dto.SCIMSchema;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
-import org.apache.commons.lang3.StringUtils;
+import org.identityconnectors.common.StringUtil;
+import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.common.security.SecurityUtil;
 import org.identityconnectors.framework.common.exceptions.ConfigurationException;
@@ -30,12 +31,12 @@ import org.identityconnectors.framework.spi.ConfigurationProperty;
 import org.identityconnectors.framework.spi.StatefulConfiguration;
 
 /**
- *
  * Connector configuration class. It contains all the needed methods for
  * processing the connector configuration.
- *
  */
 public class SCIMv11ConnectorConfiguration extends AbstractConfiguration implements StatefulConfiguration {
+
+    private static final Log LOG = Log.getLog(SCIMv11ConnectorConfiguration.class);
 
     private String username;
 
@@ -123,24 +124,26 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
 
     @Override
     public void validate() {
-        if (StringUtils.isBlank(baseAddress)) {
+        if (StringUtil.isBlank(baseAddress)) {
             failValidation("Base address cannot be null or empty.");
         }
         try {
             new URL(baseAddress);
-        } catch (MalformedURLException ex) {
+        } catch (MalformedURLException e) {
+            LOG.error(e, "While validating baseAddress");
             failValidation("Base address must be a valid URL.");
         }
-        if (StringUtils.isBlank(username)) {
+        if (StringUtil.isBlank(username)) {
             failValidation("Username cannot be null or empty.");
         }
-        if (StringUtils.isBlank(SecurityUtil.decrypt(password))) {
+        if (StringUtil.isBlank(SecurityUtil.decrypt(password))) {
             failValidation("Password Id cannot be null or empty.");
         }
-        if (StringUtils.isNotBlank(customAttributesJSON)) {
+        if (StringUtil.isNotBlank(customAttributesJSON)) {
             try {
                 SCIMv11Utils.MAPPER.readValue(customAttributesJSON, SCIMSchema.class);
-            } catch (IOException ex) {
+            } catch (IOException e) {
+                LOG.error(e, "While validating customAttributesJSON");
                 failValidation("'customAttributesJSON' parameter must be a valid "
                         + "Resource Schema Representation JSON.");
             }
@@ -149,7 +152,6 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
 
     @Override
     public void release() {
-
     }
 
     private void failValidation(String key, Object... args) {

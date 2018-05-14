@@ -34,8 +34,8 @@ import net.tirasa.connid.bundles.scimv11.dto.SCIMSchema;
 import net.tirasa.connid.bundles.scimv11.dto.User;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Attributes;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.common.security.SecurityUtil;
@@ -249,7 +249,7 @@ public class SCIMv11Service {
 
     private JsonNode buildCustomAttributesNode(final String customAttributesJSON, final User user) {
         JsonNode rootNode = null;
-        if (StringUtils.isNotBlank(customAttributesJSON) && !user.getSCIMCustomAttributes().isEmpty()) {
+        if (StringUtil.isNotBlank(customAttributesJSON) && !user.getSCIMCustomAttributes().isEmpty()) {
             rootNode = SCIMv11Utils.MAPPER.createObjectNode();
             for (SCIMAttribute scimAttribute : user.getSCIMCustomAttributes().keySet()) {
                 if (scimAttribute.getType().equals(SCIMv11Attributes.SCIM_SCHEMA_TYPE_COMPLEX)) {
@@ -348,7 +348,7 @@ public class SCIMv11Service {
     }
 
     protected void readCustomAttributes(final User user, final JsonNode node) {
-        if (StringUtils.isNotBlank(customAttributesJSON)) {
+        if (StringUtil.isNotBlank(customAttributesJSON)) {
             SCIMSchema scimSchema = extractSCIMSchemas(customAttributesJSON);
 
             if (scimSchema != null && !scimSchema.getAttributes().isEmpty()) {
@@ -373,5 +373,4 @@ public class SCIMv11Service {
             readCustomAttributes(resource, node);
         }
     }
-
 }

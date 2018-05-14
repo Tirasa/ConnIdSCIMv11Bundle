@@ -24,8 +24,8 @@ import java.util.Map;
 import net.tirasa.connid.bundles.scimv11.dto.PagedResults;
 import net.tirasa.connid.bundles.scimv11.dto.User;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 
@@ -41,6 +41,7 @@ public class SCIMv11Client extends SCIMv11Service {
             final String contentType,
             final String bearer,
             final String customAttributesJSON) {
+
         super(baseAddress, username, password, accept, contentType, bearer, customAttributesJSON);
     }
 
@@ -201,7 +202,7 @@ public class SCIMv11Client extends SCIMv11Service {
     }
 
     private User doUpdateUser(final User user) {
-        if (StringUtils.isBlank(user.getId())) {
+        if (StringUtil.isBlank(user.getId())) {
             SCIMv11Utils.handleGeneralError("Missing required user id attribute for update");
         }
 
