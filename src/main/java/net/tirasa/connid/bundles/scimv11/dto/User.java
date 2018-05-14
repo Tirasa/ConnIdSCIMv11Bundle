@@ -55,7 +55,7 @@ public class User implements BaseEntity {
     private String userName;
 
     @JsonProperty
-    private SCIMUserName name = new SCIMUserName();
+    private final SCIMUserName name = new SCIMUserName();
 
     @JsonProperty
     private String password; // not returned from API
@@ -115,7 +115,7 @@ public class User implements BaseEntity {
     private final List<String> schemas = new ArrayList<>();
 
     @JsonIgnore
-    private Map<SCIMAttribute, List<Object>> scimCustomAttributes = new HashMap<>();
+    private final Map<SCIMAttribute, List<Object>> scimCustomAttributes = new HashMap<>();
 
     @JsonIgnore
     private final Map<String, List<Object>> returnedCustomAttributes = new HashMap<>();
@@ -296,15 +296,12 @@ public class User implements BaseEntity {
         if (customAttributesObj != null) {
             for (Attribute attribute : attributes) {
                 if (!CollectionUtil.isEmpty(attribute.getValue())) {
-                    List<Object> values = attribute.getValue();
-                    String name = attribute.getName();
-
                     for (SCIMAttribute customAttribute : customAttributesObj.getAttributes()) {
                         String externalAttributeName = customAttribute.getSchema()
                                 .concat(".")
                                 .concat(customAttribute.getName());
-                        if (externalAttributeName.equals(name)) {
-                            scimCustomAttributes.put(customAttribute, values);
+                        if (externalAttributeName.equals(attribute.getName())) {
+                            scimCustomAttributes.put(customAttribute, attribute.getValue());
                             break;
                         }
                     }
@@ -324,11 +321,9 @@ public class User implements BaseEntity {
             if (field.getAnnotation(JsonIgnore.class) == null && !SCIMv11Utils.isEmptyObject(objInstance)) {
                 field.setAccessible(true);
 
-                if (field.getGenericType().getTypeName().contains(SCIMComplex.class.getName())) {
-                    if (field.getGenericType().getTypeName().contains(PhoneNumberCanonicalType.class.getName())) {
+                if (field.getGenericType().toString().contains(SCIMComplex.class.getName())) {
+                    if (field.getGenericType().toString().contains(PhoneNumberCanonicalType.class.getName())) {
                         if (field.getType().equals(List.class)) {
-                            List<SCIMComplex<PhoneNumberCanonicalType>> obj =
-                                    new ArrayList<>((List<SCIMComplex<PhoneNumberCanonicalType>>) objInstance);
                             for (SCIMComplex<PhoneNumberCanonicalType> sCIMComplex : new ArrayList<>(
                                     (List<SCIMComplex<PhoneNumberCanonicalType>>) objInstance)) {
                                 addAttribute(sCIMComplex
@@ -337,12 +332,14 @@ public class User implements BaseEntity {
                                         field.getType());
                             }
                         } else {
-                            addAttribute(SCIMComplex.class.cast(objInstance)
+                            SCIMComplex<PhoneNumberCanonicalType> sCIMComplex =
+                                    (SCIMComplex<PhoneNumberCanonicalType>) objInstance;
+                            addAttribute(sCIMComplex
                                     .toAttributes(SCIMv11Attributes.SCIM_USER_PHONE_NUMBERS),
                                     attrs,
                                     field.getType());
                         }
-                    } else if (field.getGenericType().getTypeName().contains(IMCanonicalType.class.getName())) {
+                    } else if (field.getGenericType().toString().contains(IMCanonicalType.class.getName())) {
                         if (field.getType().equals(List.class)) {
                             List<SCIMComplex<IMCanonicalType>> obj =
                                     new ArrayList<>((List<SCIMComplex<IMCanonicalType>>) objInstance);
@@ -353,12 +350,14 @@ public class User implements BaseEntity {
                                         field.getType());
                             }
                         } else {
-                            addAttribute(SCIMComplex.class.cast(objInstance)
+                            SCIMComplex<IMCanonicalType> sCIMComplex =
+                                    (SCIMComplex<IMCanonicalType>) objInstance;
+                            addAttribute(sCIMComplex
                                     .toAttributes(SCIMv11Attributes.SCIM_USER_IMS),
                                     attrs,
                                     field.getType());
                         }
-                    } else if (field.getGenericType().getTypeName().contains(EmailCanonicalType.class.getName())) {
+                    } else if (field.getGenericType().toString().contains(EmailCanonicalType.class.getName())) {
                         if (field.getType().equals(List.class)) {
                             List<SCIMComplex<EmailCanonicalType>> obj =
                                     new ArrayList<>((List<SCIMComplex<EmailCanonicalType>>) objInstance);
@@ -369,45 +368,47 @@ public class User implements BaseEntity {
                                         field.getType());
                             }
                         } else {
-                            addAttribute(SCIMComplex.class.cast(objInstance)
+                            SCIMComplex<EmailCanonicalType> sCIMComplex =
+                                    (SCIMComplex<EmailCanonicalType>) objInstance;
+                            addAttribute(sCIMComplex
                                     .toAttributes(SCIMv11Attributes.SCIM_USER_EMAILS),
                                     attrs,
                                     field.getType());
                         }
-                    } else if (field.getGenericType().getTypeName().contains(DefaultCanonicalType.class.getName())) {
+                    } else if (field.getGenericType().toString().contains(DefaultCanonicalType.class.getName())) {
                         if (field.getType().equals(List.class)) {
                             List<SCIMComplex<DefaultCanonicalType>> obj =
                                     new ArrayList<>((List<SCIMComplex<DefaultCanonicalType>>) objInstance);
                             for (SCIMComplex<DefaultCanonicalType> sCIMComplex : obj) {
-                                String id = null;
+                                String localId = null;
                                 if (sCIMComplex.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")
                                         || sCIMComplex.getValue().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")) {
-                                    id = SCIMv11Attributes.SCIM_USER_ROLES;
+                                    localId = SCIMv11Attributes.SCIM_USER_ROLES;
                                 } else if (sCIMComplex.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")
                                         || sCIMComplex.getValue().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")) {
-                                    id = SCIMv11Attributes.SCIM_USER_GROUPS;
+                                    localId = SCIMv11Attributes.SCIM_USER_GROUPS;
                                 }
-                                addAttribute(sCIMComplex.toAttributes(id),
+                                addAttribute(sCIMComplex.toAttributes(localId),
                                         attrs,
                                         field.getType());
                             }
                         } else {
                             SCIMComplex<DefaultCanonicalType> obj = SCIMComplex.class.cast(objInstance);
-                            String id = null;
+                            String localId = null;
                             if (obj.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")
                                     || obj.getValue().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")) {
-                                id = SCIMv11Attributes.SCIM_USER_ROLES;
+                                localId = SCIMv11Attributes.SCIM_USER_ROLES;
                             } else if (obj.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")
                                     || obj.getValue().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")) {
-                                id = SCIMv11Attributes.SCIM_USER_GROUPS;
+                                localId = SCIMv11Attributes.SCIM_USER_GROUPS;
                             }
-                            if (id != null) {
-                                addAttribute(obj.toAttributes(id),
+                            if (localId != null) {
+                                addAttribute(obj.toAttributes(localId),
                                         attrs,
                                         field.getType());
                             }
                         }
-                    } else if (field.getGenericType().getTypeName().contains(PhotoCanonicalType.class.getName())) {
+                    } else if (field.getGenericType().toString().contains(PhotoCanonicalType.class.getName())) {
                         if (field.getType().equals(List.class)) {
                             List<SCIMComplex<PhotoCanonicalType>> obj =
                                     new ArrayList<>((List<SCIMComplex<PhotoCanonicalType>>) objInstance);
@@ -418,13 +419,15 @@ public class User implements BaseEntity {
                                         field.getType());
                             }
                         } else {
-                            addAttribute(SCIMComplex.class.cast(objInstance)
+                            SCIMComplex<PhotoCanonicalType> sCIMComplex =
+                                    (SCIMComplex<PhotoCanonicalType>) objInstance;
+                            addAttribute(sCIMComplex
                                     .toAttributes(SCIMv11Attributes.SCIM_USER_PHOTOS),
                                     attrs,
                                     field.getType());
                         }
                     }
-                } else if (field.getGenericType().getTypeName().contains(SCIMUserName.class.getName())) {
+                } else if (field.getGenericType().toString().contains(SCIMUserName.class.getName())) {
                     if (field.getType().equals(List.class)) {
                         List<SCIMUserName> obj =
                                 new ArrayList<>((List<SCIMUserName>) objInstance);
@@ -438,7 +441,7 @@ public class User implements BaseEntity {
                                 attrs,
                                 field.getType());
                     }
-                } else if (field.getGenericType().getTypeName().contains(SCIMUserAddress.class.getName())) {
+                } else if (field.getGenericType().toString().contains(SCIMUserAddress.class.getName())) {
                     if (field.getType().equals(List.class)) {
                         List<SCIMUserAddress> obj =
                                 new ArrayList<>((List<SCIMUserAddress>) objInstance);
@@ -452,7 +455,7 @@ public class User implements BaseEntity {
                                 attrs,
                                 field.getType());
                     }
-                } else if (field.getGenericType().getTypeName().contains(SCIMMeta.class.getName())) {
+                } else if (field.getGenericType().toString().contains(SCIMMeta.class.getName())) {
                     if (field.getType().equals(List.class)) {
                         List<SCIMMeta> obj =
                                 new ArrayList<>((List<SCIMMeta>) objInstance);
@@ -490,11 +493,8 @@ public class User implements BaseEntity {
     public void fromAttributes(final Set<Attribute> attributes) {
         for (Attribute attribute : attributes) {
             if (!CollectionUtil.isEmpty(attribute.getValue())) {
-                List<Object> values = attribute.getValue();
-                String name = attribute.getName();
-
                 try {
-                    doSetAttribute(name, values);
+                    doSetAttribute(attribute.getName(), attribute.getValue());
                 } catch (Exception e) {
                     LOG.warn(e, "While populating User field from ConnId attribute: {0}", attribute);
                 }
