@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -56,7 +56,7 @@ public class SCIMv11Utils {
     public static boolean isEmptyObject(final Object obj) {
         return obj == null
                 || (obj instanceof List ? new ArrayList<>((List<?>) obj).isEmpty() : false)
-                || (obj instanceof String ? StringUtils.isBlank(String.class.cast(obj)) : false);
+                || (obj instanceof String ? StringUtil.isBlank(String.class.cast(obj)) : false);
     }
 
 }

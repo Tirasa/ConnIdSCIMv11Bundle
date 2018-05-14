@@ -25,7 +25,7 @@ import net.tirasa.connid.bundles.scimv11.dto.User;
 import net.tirasa.connid.bundles.scimv11.service.SCIMv11Client;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Attributes;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
-import org.apache.commons.lang3.StringUtils;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.common.security.SecurityUtil;
@@ -62,13 +62,13 @@ import org.identityconnectors.framework.spi.operations.UpdateOp;
 public class SCIMv11Connector implements
         Connector, CreateOp, DeleteOp, SchemaOp, SearchOp<Filter>, TestOp, UpdateOp {
 
+    private static final Log LOG = Log.getLog(SCIMv11Connector.class);
+
     private SCIMv11ConnectorConfiguration configuration;
 
     private Schema schema;
 
     private SCIMv11Client client;
-
-    private static final Log LOG = Log.getLog(SCIMv11Connector.class);
 
     @Override
     public Configuration getConfiguration() {
@@ -164,12 +164,12 @@ public class SCIMv11Connector implements
             if (key == null) {
                 List<User> users = null;
                 int remainingResults = -1;
-                int pagesSize = options.getPageSize() != null ? options.getPageSize() : -1;
+                int pagesSize = options.getPageSize() == null ? -1 : options.getPageSize();
                 String cookie = options.getPagedResultsCookie();
 
                 try {
                     if (pagesSize != -1) {
-                        if (StringUtils.isNotBlank(cookie)) {
+                        if (StringUtil.isNotBlank(cookie)) {
                             PagedResults<User> pagedResult =
                                     client.getAllUsers(Integer.valueOf(cookie), pagesSize);
                             users = pagedResult.getResources();
@@ -269,7 +269,7 @@ public class SCIMv11Connector implements
                 user.fromAttributes(createAttributes);
 
                 // custom attributes
-                if (StringUtils.isNotBlank(configuration.getCustomAttributesJSON())) {
+                if (StringUtil.isNotBlank(configuration.getCustomAttributesJSON())) {
                     user.fillSCIMCustomAttributes(createAttributes, configuration.getCustomAttributesJSON());
                 }
 
@@ -291,7 +291,7 @@ public class SCIMv11Connector implements
     public void delete(ObjectClass objectClass, Uid uid, OperationOptions options) {
         LOG.ok("Connector DELETE");
 
-        if (StringUtils.isBlank(uid.getUidValue())) {
+        if (StringUtil.isBlank(uid.getUidValue())) {
             LOG.error("Uid not provided or empty ");
             throw new InvalidAttributeValueException("Uid value not provided or empty");
         }
@@ -343,7 +343,7 @@ public class SCIMv11Connector implements
             }
 
             // custom attributes
-            if (StringUtils.isNotBlank(configuration.getCustomAttributesJSON())) {
+            if (StringUtil.isNotBlank(configuration.getCustomAttributesJSON())) {
                 user.fillSCIMCustomAttributes(replaceAttributes, configuration.getCustomAttributesJSON());
             }
 
@@ -402,7 +402,7 @@ public class SCIMv11Connector implements
             }
 
             // custom attributes
-            if (StringUtils.isNotBlank(configuration.getCustomAttributesJSON())) {
+            if (StringUtil.isNotBlank(configuration.getCustomAttributesJSON())) {
                 for (String customAttributeKey : user.getReturnedCustomAttributes().keySet()) {
                     builder.addAttribute(customAttributeKey,
                             user.getReturnedCustomAttributes().get(customAttributeKey));

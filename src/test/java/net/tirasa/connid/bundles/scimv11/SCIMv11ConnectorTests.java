@@ -43,7 +43,7 @@ import net.tirasa.connid.bundles.scimv11.types.AddressCanonicalType;
 import net.tirasa.connid.bundles.scimv11.types.EmailCanonicalType;
 import net.tirasa.connid.bundles.scimv11.types.PhoneNumberCanonicalType;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Attributes;
-import org.apache.commons.lang3.StringUtils;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.api.APIConfiguration;
@@ -619,7 +619,7 @@ public class SCIMv11ConnectorTests {
     }
 
     private boolean testCustomAttributes() {
-        return StringUtils.isNotBlank(CONF.getCustomAttributesJSON())
+        return StringUtil.isNotBlank(CONF.getCustomAttributesJSON())
                 && !CUSTOM_ATTRIBUTES_KEYS.isEmpty()
                 && !CUSTOM_ATTRIBUTES_VALUES.isEmpty()
                 && !CUSTOM_ATTRIBUTES_UPDATE_VALUES.isEmpty();
