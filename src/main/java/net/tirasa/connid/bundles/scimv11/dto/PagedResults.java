@@ -67,4 +67,10 @@ public class PagedResults<T extends BaseEntity> {
         this.startIndex = startIndex;
     }
 
+    @Override
+    public String toString() {
+        return "PagedResults{" + "totalResults=" + totalResults + ", itemsPerPage=" + itemsPerPage + ", startIndex="
+                + startIndex + ", schemas=" + schemas + ", resources=" + resources + '}';
+    }
+
 }

@@ -22,9 +22,9 @@ public interface BaseEntity {
 
     String getId();
 
-    void setId(String id);
+    void setId(final String id);
 
     Set<Attribute> toAttributes() throws IllegalArgumentException, IllegalAccessException;
 
-    void fromAttributes(Set<Attribute> attributes);
+    void fromAttributes(final Set<Attribute> attributes);
 }
