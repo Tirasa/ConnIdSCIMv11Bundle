@@ -49,6 +49,7 @@ import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.api.APIConfiguration;
 import org.identityconnectors.framework.api.ConnectorFacade;
 import org.identityconnectors.framework.api.ConnectorFacadeFactory;
+import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.Attribute;
 import org.identityconnectors.framework.common.objects.AttributeBuilder;
 import org.identityconnectors.framework.common.objects.ConnectorObject;
@@ -253,7 +254,7 @@ public class SCIMv11ConnectorTests {
             try {
                 client.deleteUser(testUserUid);
                 fail(); // must fail
-            } catch (RuntimeException e) {
+            } catch (ConnectorException e) {
                 assertNotNull(e);
             }
 
@@ -275,7 +276,7 @@ public class SCIMv11ConnectorTests {
             try {
                 client.getUser(testUserUid);
                 fail(); // must fail
-            } catch (RuntimeException e) {
+            } catch (ConnectorException e) {
                 assertNotNull(e);
             }
         }

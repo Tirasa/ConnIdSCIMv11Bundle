@@ -249,13 +249,13 @@ public class SCIMv11Service {
             throw new NoSuchEntityException(response.readEntity(String.class));
         } else if (response.getStatus() != Status.OK.getStatusCode()
                 && response.getStatus() != Status.ACCEPTED.getStatusCode()) {
-            throw new RuntimeException("While executing GET request: " + response.readEntity(String.class));
+            SCIMv11Utils.handleGeneralError("While executing GET request: " + response.readEntity(String.class));
         }
     }
 
     private void checkServiceResultErrors(final JsonNode node, final Response response) {
         if (node.has(RESPONSE_ERRORS)) {
-            throw new RuntimeException(response.readEntity(String.class));
+            SCIMv11Utils.handleGeneralError(response.readEntity(String.class));
         }
     }
 
