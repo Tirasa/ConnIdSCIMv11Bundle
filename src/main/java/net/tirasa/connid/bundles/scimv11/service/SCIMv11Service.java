@@ -111,16 +111,9 @@ public class SCIMv11Service {
         try {
             Response response = webClient.get();
             String responseAsString = response.readEntity(String.class);
-            if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
-                throw new NoSuchEntityException(responseAsString);
-            } else if (response.getStatus() != Status.OK.getStatusCode()
-                    && response.getStatus() != Status.ACCEPTED.getStatusCode()) {
-                SCIMv11Utils.handleGeneralError("While executing GET request: " + responseAsString);
-            }
-
+            checkServiceErrors(response);
             result = SCIMv11Utils.MAPPER.readTree(responseAsString);
-
-            checkServiceErrors(result, response);
+            checkServiceResultErrors(result, response);
 
             if (result.isArray()
                     && (!result.has(RESPONSE_RESOURCES) || result.get(RESPONSE_RESOURCES).isNull())) {
@@ -213,9 +206,9 @@ public class SCIMv11Service {
                 SCIMv11Utils.handleGeneralError("While updating User - no response");
             } else {
                 String responseAsString = response.readEntity(String.class);
+                checkServiceErrors(response);
                 result = SCIMv11Utils.MAPPER.readTree(responseAsString);
-
-                checkServiceErrors(result, response);
+                checkServiceResultErrors(result, response);
             }
         } catch (IOException ex) {
             SCIMv11Utils.handleGeneralError("While updating User", ex);
@@ -251,11 +244,17 @@ public class SCIMv11Service {
         }
     }
 
-    private void checkServiceErrors(final JsonNode node, final Response response) {
-        if ((response.getStatus() != Status.OK.getStatusCode()
-                && response.getStatus() != Status.NO_CONTENT.getStatusCode()
-                && response.getStatus() != Status.CREATED.getStatusCode())
-                || node.has(RESPONSE_ERRORS)) {
+    private void checkServiceErrors(final Response response) {
+        if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
+            throw new NoSuchEntityException(response.readEntity(String.class));
+        } else if (response.getStatus() != Status.OK.getStatusCode()
+                && response.getStatus() != Status.ACCEPTED.getStatusCode()) {
+            throw new RuntimeException("While executing GET request: " + response.readEntity(String.class));
+        }
+    }
+
+    private void checkServiceResultErrors(final JsonNode node, final Response response) {
+        if (node.has(RESPONSE_ERRORS)) {
             throw new RuntimeException(response.readEntity(String.class));
         }
     }

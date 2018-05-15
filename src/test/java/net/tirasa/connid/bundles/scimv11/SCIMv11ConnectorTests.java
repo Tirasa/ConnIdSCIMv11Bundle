@@ -90,7 +90,7 @@ public class SCIMv11ConnectorTests {
     @BeforeClass
     public static void setUpConf() throws IOException {
         PROPS.load(SCIMv11ConnectorTests.class.getResourceAsStream(
-                "/net/tirasa/connid/bundles/scimv11/oauth2.properties"));
+                "/net/tirasa/connid/bundles/scimv11/auth.properties"));
 
         Map<String, String> configurationParameters = new HashMap<>();
         for (final String name : PROPS.stringPropertyNames()) {
