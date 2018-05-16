@@ -249,7 +249,6 @@ public class SCIMv11Connector implements
             Attribute status = accessor.find(OperationalAttributes.ENABLE_NAME);
 
             try {
-                // handle mandatory attributes (some attributes are handled by Service class)
                 user.setUserName(username);
 
                 if (password == null) {
