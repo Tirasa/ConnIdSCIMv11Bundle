@@ -155,7 +155,7 @@ public class SCIMv11Client extends SCIMv11Service {
         PagedResults<User> resources = null;
         JsonNode node = null;
         try {
-            node = doGetFromService(webClient);
+            node = doGet(webClient);
             resources = SCIMv11Utils.MAPPER.readValue(
                     node.toString(),
                     new TypeReference<PagedResults<User>>() {
@@ -178,7 +178,7 @@ public class SCIMv11Client extends SCIMv11Service {
         User user = null;
         JsonNode node = null;
         try {
-            node = doGetFromService(webClient);
+            node = doGet(webClient);
             user = SCIMv11Utils.MAPPER.readValue(
                     node.toString(),
                     User.class);

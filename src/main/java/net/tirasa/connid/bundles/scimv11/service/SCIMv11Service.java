@@ -104,7 +104,7 @@ public class SCIMv11Service {
         return webClient;
     }
 
-    protected JsonNode doGetFromService(final WebClient webClient) {
+    protected JsonNode doGet(final WebClient webClient) {
         LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
         JsonNode result = null;
 
