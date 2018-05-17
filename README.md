@@ -28,5 +28,5 @@ Available from [releases](https://github.com/Tirasa/ConnIdSCIMv11Bundle/releases
 
 ## Project information
 
- * [wiki](https://connid.atlassian.net/wiki/display/BASE/SCIMv11)
- * [issues](https://connid.atlassian.net/browse/SCIMv11)
+ * [wiki](https://connid.atlassian.net/wiki/display/BASE/SCIM+1.1)
+ * [issues](https://connid.atlassian.net/browse/SCIMV11)
