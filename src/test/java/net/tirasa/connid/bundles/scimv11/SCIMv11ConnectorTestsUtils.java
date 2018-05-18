@@ -25,9 +25,13 @@ public class SCIMv11ConnectorTestsUtils {
 
     private static final Log LOG = Log.getLog(SCIMv11ConnectorTestsUtils.class);
 
-    public static final String USERNAME = "--testuser--";
+    public static final String VALUE_USERNAME = "--testuser--";
 
-    public static final String PASSWORD = "Password-01";
+    public static final String VALUE_PASSWORD = "Password-01";
+
+    public static final String VALUE_PHONENUMBER = "+31234567890";
+
+    public static final String VALUE_FAMILY_NAME = "Family name";
 
     public static final String USER_ATTRIBUTE_FAMILY_NAME = "name.familyName";
 

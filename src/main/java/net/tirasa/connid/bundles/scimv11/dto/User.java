@@ -49,13 +49,13 @@ public class User implements BaseEntity {
     private String externalId;
 
     @JsonProperty
-    private SCIMMeta meta = new SCIMMeta();
+    private SCIMMeta meta;
 
     @JsonProperty
     private String userName;
 
     @JsonProperty
-    private final SCIMUserName name = new SCIMUserName();
+    private SCIMUserName name;
 
     @JsonProperty
     private String password; // not returned from API
@@ -140,6 +140,10 @@ public class User implements BaseEntity {
 
     public SCIMUserName getName() {
         return name;
+    }
+
+    public void setName(final SCIMUserName name) {
+        this.name = name;
     }
 
     public String getDisplayName() {
@@ -291,6 +295,7 @@ public class User implements BaseEntity {
      * @param attributes
      * @param customAttributesJSON
      */
+    @JsonIgnore
     public void fillSCIMCustomAttributes(final Set<Attribute> attributes, final String customAttributesJSON) {
         SCIMSchema customAttributesObj = SCIMv11Service.extractSCIMSchemas(customAttributesJSON);
         if (customAttributesObj != null) {
@@ -310,6 +315,7 @@ public class User implements BaseEntity {
         }
     }
 
+    @JsonIgnore
     @Override
     @SuppressWarnings("unchecked")
     public Set<Attribute> toAttributes() throws IllegalArgumentException, IllegalAccessException {
@@ -318,7 +324,7 @@ public class User implements BaseEntity {
         Field[] fields = User.class.getDeclaredFields();
         for (Field field : fields) {
             Object objInstance = field.get(this);
-            if (field.getAnnotation(JsonIgnore.class) == null && !SCIMv11Utils.isEmptyObject(objInstance)) {
+            if (!field.isAnnotationPresent(JsonIgnore.class) && !SCIMv11Utils.isEmptyObject(objInstance)) {
                 field.setAccessible(true);
 
                 if (field.getGenericType().toString().contains(SCIMComplex.class.getName())) {
@@ -478,6 +484,7 @@ public class User implements BaseEntity {
         return attrs;
     }
 
+    @JsonIgnore
     private void addAttribute(final Set<Attribute> toAttrs,
             final Set<Attribute> attrs,
             final Class<?> type) {
@@ -489,6 +496,7 @@ public class User implements BaseEntity {
         }
     }
 
+    @JsonIgnore
     @Override
     public void fromAttributes(final Set<Attribute> attributes) {
         for (Attribute attribute : attributes) {
@@ -502,34 +510,56 @@ public class User implements BaseEntity {
         }
     }
 
+    @JsonIgnore
     @SuppressWarnings("unchecked")
     private void doSetAttribute(final String name, final List<Object> values) {
         Object value = values.get(0);
 
         // only NON-READ-ONLY fields here
         switch (name) {
-            case "name.userName":
+            case "userName":
                 this.userName = String.class.cast(value);
                 break;
             case "name.formatted":
+                if (this.name == null) {
+                    this.name = new SCIMUserName();
+                }
                 this.name.setFormatted(String.class.cast(value));
                 break;
             case "name.familyName":
+                if (this.name == null) {
+                    this.name = new SCIMUserName();
+                }
                 this.name.setFamilyName(String.class.cast(value));
                 break;
             case "name.givenName":
+                if (this.name == null) {
+                    this.name = new SCIMUserName();
+                }
                 this.name.setGivenName(String.class.cast(value));
                 break;
             case "name.middleName":
+                if (this.name == null) {
+                    this.name = new SCIMUserName();
+                }
                 this.name.setMiddleName(String.class.cast(value));
                 break;
             case "name.honorificPrefix":
+                if (this.name == null) {
+                    this.name = new SCIMUserName();
+                }
                 this.name.setHonorificPrefix(String.class.cast(value));
                 break;
             case "name.honorificSuffix":
+                if (this.name == null) {
+                    this.name = new SCIMUserName();
+                }
                 this.name.setHonorificSuffix(String.class.cast(value));
                 break;
             case "meta.attributes":
+                if (meta == null) {
+                    meta = new SCIMMeta();
+                }
                 this.meta.getAttributes().addAll(new ArrayList<>((List<String>) (Object) values));
                 break;
             case "displayName":
@@ -1133,6 +1163,7 @@ public class User implements BaseEntity {
         }
     }
 
+    @JsonIgnore
     private <T extends Enum<?>> SCIMComplex<T> handleSCIMComplexObject(final T type,
             final List<SCIMComplex<T>> list) {
         SCIMComplex<T> selected = null;
@@ -1150,6 +1181,7 @@ public class User implements BaseEntity {
         return selected;
     }
 
+    @JsonIgnore
     private SCIMUserAddress handleSCIMUserAddressObject(final AddressCanonicalType type) {
         SCIMUserAddress selected = null;
         for (SCIMUserAddress complex : this.addresses) {
