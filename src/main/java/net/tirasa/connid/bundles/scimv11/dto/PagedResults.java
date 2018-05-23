@@ -16,6 +16,7 @@
 package net.tirasa.connid.bundles.scimv11.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PagedResults<T extends BaseEntity> {
@@ -33,7 +34,7 @@ public class PagedResults<T extends BaseEntity> {
     private List<String> schemas;
 
     @JsonProperty("Resources")
-    private List<T> resources;
+    private List<T> resources = new ArrayList<>();
 
     public List<T> getResources() {
         return resources;

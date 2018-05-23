@@ -21,28 +21,20 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.tirasa.connid.bundles.scimv11.SCIMv11ConnectorConfiguration;
 import net.tirasa.connid.bundles.scimv11.dto.PagedResults;
 import net.tirasa.connid.bundles.scimv11.dto.User;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
-import org.identityconnectors.common.security.GuardedString;
 
 public class SCIMv11Client extends SCIMv11Service {
 
     private static final Log LOG = Log.getLog(SCIMv11Client.class);
 
-    public SCIMv11Client(
-            final String baseAddress,
-            final String username,
-            final GuardedString password,
-            final String accept,
-            final String contentType,
-            final String bearer,
-            final String customAttributesJSON,
-            final String updateMethod) {
-        super(baseAddress, username, password, accept, contentType, bearer, customAttributesJSON, updateMethod);
+    public SCIMv11Client(final SCIMv11ConnectorConfiguration config) {
+        super(config);
     }
 
     /**
@@ -164,12 +156,14 @@ public class SCIMv11Client extends SCIMv11Service {
             LOG.error(ex, "While converting from JSON to Users");
         }
 
-        if (resources == null) {
+        if (resources == null || node == null) {
             SCIMv11Utils.handleGeneralError("While retrieving users from service");
+        } else {
+            // check custom attributes
+            if (!resources.getResources().isEmpty()) {
+                readCustomAttributes(resources, node.get(RESPONSE_RESOURCES));
+            }
         }
-
-        // check custom attributes
-        readCustomAttributes(resources, node.get(RESPONSE_RESOURCES));
 
         return resources;
     }
@@ -186,12 +180,12 @@ public class SCIMv11Client extends SCIMv11Service {
             LOG.error(ex, "While converting from JSON to User");
         }
 
-        if (user == null) {
+        if (user == null || node == null) {
             SCIMv11Utils.handleGeneralError("While retrieving user from service after create");
+        } else {
+            // check custom attributes
+            readCustomAttributes(user, node);
         }
-
-        // check custom attributes
-        readCustomAttributes(user, node);
 
         return user;
     }

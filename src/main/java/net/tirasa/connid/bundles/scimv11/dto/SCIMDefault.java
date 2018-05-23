@@ -17,68 +17,23 @@ package net.tirasa.connid.bundles.scimv11.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Attributes;
 import org.identityconnectors.framework.common.objects.Attribute;
 
-public class SCIMComplex<E extends Enum<?>> {
+public class SCIMDefault {
 
     @JsonProperty
     private String value;
-
-    @JsonProperty(access = Access.READ_ONLY)
-    private String display;
-
-    @JsonProperty
-    private E type;
-
-    @JsonProperty
-    private Boolean primary;
-
-    @JsonProperty
-    private String operation;
-
-    public String getValue() {
-        return value;
-    }
 
     public void setValue(final String value) {
         this.value = value;
     }
 
-    public String getDisplay() {
-        return display;
-    }
-
-    public E getType() {
-        return type;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setDisplay(final String display) {
-        this.display = display;
-    }
-
-    public void setType(final E type) {
-        this.type = type;
-    }
-
-    public Boolean isPrimary() {
-        return primary;
-    }
-
-    public void setPrimary(final Boolean primary) {
-        this.primary = primary;
-    }
-
-    public void setOperation(final String operation) {
-        this.operation = operation;
+    public String getValue() {
+        return value;
     }
 
     public Set<Attribute> toAttributes(final String id) throws IllegalArgumentException, IllegalAccessException {
@@ -90,7 +45,7 @@ public class SCIMComplex<E extends Enum<?>> {
                 attrs.add(SCIMv11Attributes.doBuildAttributeFromClassField(
                         field.get(this),
                         id.concat(".")
-                                .concat(type.toString())
+                                .concat("default")
                                 .concat(".")
                                 .concat(field.getName()),
                         field.getType()).build());
@@ -101,8 +56,7 @@ public class SCIMComplex<E extends Enum<?>> {
 
     @Override
     public String toString() {
-        return "SCIMComplex{" + "value=" + value + ", display=" + display + ", type=" + type + ", primary=" + primary
-                + ", operation=" + operation + '}';
+        return "SCIMDefault{" + "value=" + value + '}';
     }
 
 }

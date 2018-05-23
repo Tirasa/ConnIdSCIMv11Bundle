@@ -55,6 +55,8 @@ public final class SCIMv11Attributes {
 
     public static final String SCIM_USER_ROLES = "roles";
 
+    public static final String SCIM_USER_ENTITLEMENTS = "entitlements";
+
     public static final String SCIM_USER_GROUPS = "groups";
 
     public static final String SCIM_USER_PHOTOS = "photos";
@@ -113,12 +115,6 @@ public final class SCIMv11Attributes {
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("emails.other.operation").build());
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("emails.other.primary")
                 .setType(Boolean.class).build());
-
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("entitlements.default.value").build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("entitlements.default.primary")
-                .setType(Boolean.class).build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("entitlements.default.display").build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("entitlements.default.operation").build());
 
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("phoneNumbers.work.value").build());
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("phoneNumbers.work.operation").build());
@@ -210,19 +206,9 @@ public final class SCIMv11Attributes {
 
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("groups.default.value")
                 .setUpdateable(false).build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("groups.default.display")
-                .setUpdateable(false).build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("groups.default.operation")
-                .setUpdateable(false).build());
-
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("roles.default.value").build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("roles.default.display").build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("roles.default.operation").build());
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("roles.default.primary")
-                .setType(Boolean.class).build());
-
-        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("x509Certificates")
-                .setMultiValued(true).build());
+        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("entitlements.default.value").build());
+        userBuilder.addAttributeInfo(AttributeInfoBuilder.define("x509Certificates.default.value").build());
 
         userBuilder.addAttributeInfo(AttributeInfoBuilder.define("schemas")
                 .setMultiValued(true).build());

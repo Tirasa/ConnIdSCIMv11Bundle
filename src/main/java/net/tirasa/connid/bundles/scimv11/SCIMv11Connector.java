@@ -82,16 +82,7 @@ public class SCIMv11Connector implements
         this.configuration = (SCIMv11ConnectorConfiguration) configuration;
         this.configuration.validate();
 
-        client = new SCIMv11Client(
-                this.configuration.getBaseAddress(),
-                this.configuration.getUsername(),
-                this.configuration.getPassword(),
-                this.configuration.getAccept(),
-                this.configuration.getContentType(),
-                this.configuration.getBearer(),
-                this.configuration.getCustomAttributesJSON(),
-                this.configuration.getUpdateMethod()
-        );
+        client = new SCIMv11Client((SCIMv11ConnectorConfiguration) configuration);
 
         LOG.ok("Connector {0} successfully inited", getClass().getName());
     }
@@ -201,6 +192,7 @@ public class SCIMv11Connector implements
             } else {
                 User result = null;
                 if (Uid.NAME.equals(key.getName()) || SCIMv11Attributes.USER_ATTRIBUTE_ID.equals(key.getName())) {
+                    result = null;
                     try {
                         result = client.getUser(AttributeUtil.getAsStringValue(key));
                     } catch (Exception e) {
@@ -219,13 +211,14 @@ public class SCIMv11Connector implements
                                 + key.getName() + " - " + AttributeUtil.getAsStringValue(key), e);
                     }
                 }
-                handler.handle(fromUser(result, attributesToGet));
+                if (result != null) {
+                    handler.handle(fromUser(result, attributesToGet));
+                }
             }
-
         } else {
             LOG.warn("Search of type {0} is not supported", objectClass.getObjectClassValue());
-            throw new UnsupportedOperationException("Search of type"
-                    + objectClass.getObjectClassValue() + " is not supported");
+            throw new UnsupportedOperationException("Search of type" + objectClass.getObjectClassValue()
+                    + " is not supported");
         }
     }
 
@@ -282,8 +275,8 @@ public class SCIMv11Connector implements
 
         } else {
             LOG.warn("Create of type {0} is not supported", objectClass.getObjectClassValue());
-            throw new UnsupportedOperationException("Create of type"
-                    + objectClass.getObjectClassValue() + " is not supported");
+            throw new UnsupportedOperationException("Create of type" + objectClass.getObjectClassValue()
+                    + " is not supported");
         }
     }
 
@@ -310,8 +303,8 @@ public class SCIMv11Connector implements
 
         } else {
             LOG.warn("Delete of type {0} is not supported", objectClass.getObjectClassValue());
-            throw new UnsupportedOperationException("Delete of type"
-                    + objectClass.getObjectClassValue() + " is not supported");
+            throw new UnsupportedOperationException("Delete of type" + objectClass.getObjectClassValue()
+                    + " is not supported");
         }
     }
 
@@ -378,8 +371,8 @@ public class SCIMv11Connector implements
 
         } else {
             LOG.warn("Update of type {0} is not supported", objectClass.getObjectClassValue());
-            throw new UnsupportedOperationException("Update of type"
-                    + objectClass.getObjectClassValue() + " is not supported");
+            throw new UnsupportedOperationException("Update of type" + objectClass.getObjectClassValue()
+                    + " is not supported");
         }
     }
 

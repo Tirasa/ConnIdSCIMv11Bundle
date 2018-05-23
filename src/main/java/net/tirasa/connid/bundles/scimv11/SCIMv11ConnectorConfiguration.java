@@ -52,7 +52,15 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
 
     private String contentType = MediaType.APPLICATION_JSON;
 
-    private String bearer;
+    private String clientId;
+
+    private String clientSecret;
+
+    private String accessTokenNodeId;
+
+    private String accessTokenBaseAddress;
+
+    private String accessTokenContentType = MediaType.APPLICATION_FORM_URLENCODED;
 
     @ConfigurationProperty(order = 1, displayMessageKey = "baseAddress.display",
             helpMessageKey = "baseAddress.help", required = true)
@@ -104,18 +112,29 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
         this.password = password;
     }
 
-    @ConfigurationProperty(displayMessageKey = "bearer.display",
-            helpMessageKey = "bearer.help", order = 6)
-    public String getBearer() {
-        return bearer;
+
+    @ConfigurationProperty(displayMessageKey = "clientId.display",
+            helpMessageKey = "clientId.help", order = 6)
+    public String getCliendId() {
+        return clientId;
     }
 
-    public void setBearer(final String bearer) {
-        this.bearer = bearer;
+    public void setCliendId(final String clientId) {
+        this.clientId = clientId;
+    }
+
+    @ConfigurationProperty(displayMessageKey = "clientSecret.display",
+            helpMessageKey = "clientSecret.help", order = 7)
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public void setClientSecret(final String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 
     @ConfigurationProperty(displayMessageKey = "customAttributesJSON.display",
-            helpMessageKey = "customAttributesJSON.help", order = 7)
+            helpMessageKey = "customAttributesJSON.help", order = 8)
     public String getCustomAttributesJSON() {
         return customAttributesJSON;
     }
@@ -125,13 +144,43 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
     }
 
     @ConfigurationProperty(displayMessageKey = "updateMethod.display",
-            helpMessageKey = "updateMethod.help", order = 8)
+            helpMessageKey = "updateMethod.help", order = 9)
     public String getUpdateMethod() {
         return updateMethod;
     }
 
     public void setUpdateMethod(final String updateMethod) {
         this.updateMethod = updateMethod;
+    }
+
+    @ConfigurationProperty(displayMessageKey = "accessTokenNodeId.display",
+            helpMessageKey = "accessTokenNodeId.help", order = 10)
+    public String getAccessTokenNodeId() {
+        return accessTokenNodeId;
+    }
+
+    public void setAccessTokenNodeId(final String accessTokenNodeId) {
+        this.accessTokenNodeId = accessTokenNodeId;
+    }
+
+    @ConfigurationProperty(displayMessageKey = "accessTokenBaseAddress.display",
+            helpMessageKey = "accessTokenBaseAddress.help", order = 11)
+    public String getAccessTokenBaseAddress() {
+        return accessTokenBaseAddress;
+    }
+
+    public void setAccessTokenBaseAddress(final String accessTokenBaseAddress) {
+        this.accessTokenBaseAddress = accessTokenBaseAddress;
+    }
+
+    @ConfigurationProperty(displayMessageKey = "accessTokenContentType.display",
+            helpMessageKey = "accessTokenContentType.help", order = 12)
+    public String getAccessTokenContentType() {
+        return accessTokenContentType;
+    }
+
+    public void setAccessTokenContentType(final String accessTokenContentType) {
+        this.accessTokenContentType = accessTokenContentType;
     }
 
     @Override

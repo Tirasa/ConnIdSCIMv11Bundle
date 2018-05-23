@@ -16,32 +16,38 @@
 package net.tirasa.connid.bundles.scimv11;
 
 import java.util.Map;
-import java.util.Random;
+import java.util.Set;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
-import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
+import org.identityconnectors.framework.common.objects.Attribute;
 
 public class SCIMv11ConnectorTestsUtils {
 
     private static final Log LOG = Log.getLog(SCIMv11ConnectorTestsUtils.class);
 
-    public static final String VALUE_USERNAME = "--testuser--";
+    public static final String VALUE_USERNAME = "testuserConn";
 
     public static final String VALUE_PASSWORD = "Password-01";
 
-    public static final String VALUE_PHONENUMBER = "+31234567890";
+    public static final String VALUE_PHONE_NUMBER = "+31234567890";
 
     public static final String VALUE_FAMILY_NAME = "Family name";
 
+    public static final String VALUE_GIVEN_NAME = "Given name";
+
+    public static final String VALUE_NICK_NAME = "Nickname";
+
+    public static final String VALUE_ROLE = "Test role";
+
     public static final String USER_ATTRIBUTE_FAMILY_NAME = "name.familyName";
 
-    public static final String USER_ATTRIBUTE_EMAIL_HOME_VALUE = "emails.home.value";
+    public static final String USER_ATTRIBUTE_NICK_NAME = "nickName";
 
-    public static final String USER_ATTRIBUTE_EMAIL_OTHER_VALUE = "emails.other.value";
+    public static final String USER_ATTRIBUTE_EMAIL_WORK_VALUE = "emails.work.value";
 
-    public static final String USER_ATTRIBUTE_EMAIL_OTHER_PRIMARY = "emails.other.primary";
+    public static final String USER_ATTRIBUTE_ENTITLEMENTS_DEFAULT_VALUE = "entitlements.default.value";
 
-    public static final String USER_ATTRIBUTE_EMAIL_OTHER_OPERATION = "emails.other.operation";
+    public static final String USER_ATTRIBUTE_ROLES_DEFAULT_VALUE = "roles.default.value";
 
     public static final String USER_ATTRIBUTE_PHONE_OTHER_VALUE = "phoneNumbers.other.value";
 
@@ -49,9 +55,7 @@ public class SCIMv11ConnectorTestsUtils {
 
     public static final String USER_ATTRIBUTE_PHONE_OTHER_OPERATION = "phoneNumbers.other.operation";
 
-    public static final String USER_ATTRIBUTE_ADDRESS_HOME_STREETADDRESS = "addresses.home.streetAddress";
-
-    private static final Random RANDOM = new Random();
+    public static final String USER_ATTRIBUTE_ADDRESS_WORK_STREET_ADDRESS = "addresses.work.streetAddress";
 
     public static SCIMv11ConnectorConfiguration buildConfiguration(Map<String, String> configuration) {
         SCIMv11ConnectorConfiguration connectorConfiguration = new SCIMv11ConnectorConfiguration();
@@ -74,13 +78,28 @@ public class SCIMv11ConnectorTestsUtils {
                 case "auth.accept":
                     connectorConfiguration.setAccept(entry.getValue());
                     break;
-                case "auth.bearer":
-                    connectorConfiguration.setBearer(entry.getValue());
+                case "auth.clientId":
+                    connectorConfiguration.setCliendId(entry.getValue());
+                    break;
+                case "auth.clientSecret":
+                    connectorConfiguration.setClientSecret(entry.getValue());
+                    break;
+                case "auth.accessTokenNodeId":
+                    connectorConfiguration.setAccessTokenNodeId(entry.getValue());
+                    break;
+                case "auth.accessTokenBaseAddress":
+                    connectorConfiguration.setAccessTokenBaseAddress(entry.getValue());
+                    break;
+                case "auth.accessTokenContentType":
+                    connectorConfiguration.setAccessTokenContentType(entry.getValue());
                     break;
                 case "auth.customAttributesJSON":
                     connectorConfiguration.setCustomAttributesJSON(entry.getValue());
                     break;
                 case "auth.updateMethod":
+                    connectorConfiguration.setUpdateMethod(entry.getValue());
+                    break;
+                case "auth.defaultEntitlement":
                     connectorConfiguration.setUpdateMethod(entry.getValue());
                     break;
                 default:
@@ -96,7 +115,21 @@ public class SCIMv11ConnectorTestsUtils {
         return true;
     }
 
-    public static String createRandomName(final String namePrefix) {
-        return namePrefix + StringUtil.randomString(RANDOM, (namePrefix.length() - 30));
+    public static boolean hasAttribute(final Set<Attribute> attrs, final String name) {
+        for (Attribute attr : attrs) {
+            if (attr.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean containsAttribute(final Set<Attribute> attrs, final String name) {
+        for (Attribute attr : attrs) {
+            if (attr.getName().contains(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -96,7 +96,7 @@ public class SCIMUserName {
         Set<Attribute> attrs = new HashSet<>();
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {
-            if (field.getAnnotation(JsonIgnore.class) == null) {
+            if (!field.isAnnotationPresent(JsonIgnore.class)) {
                 field.setAccessible(true);
                 attrs.add(SCIMv11Attributes.doBuildAttributeFromClassField(
                         field.get(this),

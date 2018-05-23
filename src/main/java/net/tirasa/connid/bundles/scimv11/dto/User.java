@@ -27,13 +27,13 @@ import java.util.Set;
 import net.tirasa.connid.bundles.scimv11.service.SCIMv11Service;
 import net.tirasa.connid.bundles.scimv11.types.AddressCanonicalType;
 import net.tirasa.connid.bundles.scimv11.types.EmailCanonicalType;
-import net.tirasa.connid.bundles.scimv11.types.DefaultCanonicalType;
 import net.tirasa.connid.bundles.scimv11.types.IMCanonicalType;
 import net.tirasa.connid.bundles.scimv11.types.PhoneNumberCanonicalType;
 import net.tirasa.connid.bundles.scimv11.types.PhotoCanonicalType;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Attributes;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
 import org.identityconnectors.common.CollectionUtil;
+import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.common.objects.Attribute;
 
@@ -100,16 +100,19 @@ public class User implements BaseEntity {
     private final List<SCIMComplex<PhotoCanonicalType>> photos = new ArrayList<>();
 
     @JsonProperty
-    private final List<SCIMComplex<DefaultCanonicalType>> groups = new ArrayList<>();
-
-    @JsonProperty
-    private final List<SCIMComplex<DefaultCanonicalType>> roles = new ArrayList<>();
-
-    @JsonProperty
     private final List<SCIMUserAddress> addresses = new ArrayList<>();
 
     @JsonProperty
-    private final List<String> x509Certificates = new ArrayList<>();
+    private final List<SCIMDefault> groups = new ArrayList<>();
+
+    @JsonProperty
+    private final List<SCIMDefault> roles = new ArrayList<>();
+
+    @JsonProperty
+    private final List<SCIMDefault> entitlements = new ArrayList<>();
+
+    @JsonProperty
+    private final List<SCIMDefault> x509Certificates = new ArrayList<>();
 
     @JsonProperty
     private final List<String> schemas = new ArrayList<>();
@@ -262,16 +265,20 @@ public class User implements BaseEntity {
         return addresses;
     }
 
-    public List<String> getX509Certificates() {
+    public List<SCIMDefault> getX509Certificates() {
         return x509Certificates;
     }
 
-    public List<SCIMComplex<DefaultCanonicalType>> getGroups() {
+    public List<SCIMDefault> getGroups() {
         return groups;
     }
 
-    public List<SCIMComplex<DefaultCanonicalType>> getRoles() {
+    public List<SCIMDefault> getRoles() {
         return roles;
+    }
+
+    public List<SCIMDefault> getEntitlements() {
+        return entitlements;
     }
 
     public List<String> getSchemas() {
@@ -381,39 +388,6 @@ public class User implements BaseEntity {
                                     attrs,
                                     field.getType());
                         }
-                    } else if (field.getGenericType().toString().contains(DefaultCanonicalType.class.getName())) {
-                        if (field.getType().equals(List.class)) {
-                            List<SCIMComplex<DefaultCanonicalType>> obj =
-                                    new ArrayList<>((List<SCIMComplex<DefaultCanonicalType>>) objInstance);
-                            for (SCIMComplex<DefaultCanonicalType> sCIMComplex : obj) {
-                                String localId = null;
-                                if (sCIMComplex.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")
-                                        || sCIMComplex.getValue().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")) {
-                                    localId = SCIMv11Attributes.SCIM_USER_ROLES;
-                                } else if (sCIMComplex.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")
-                                        || sCIMComplex.getValue().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")) {
-                                    localId = SCIMv11Attributes.SCIM_USER_GROUPS;
-                                }
-                                addAttribute(sCIMComplex.toAttributes(localId),
-                                        attrs,
-                                        field.getType());
-                            }
-                        } else {
-                            SCIMComplex<DefaultCanonicalType> obj = SCIMComplex.class.cast(objInstance);
-                            String localId = null;
-                            if (obj.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")
-                                    || obj.getValue().startsWith(SCIMv11Attributes.SCIM_USER_ROLES + ".")) {
-                                localId = SCIMv11Attributes.SCIM_USER_ROLES;
-                            } else if (obj.getDisplay().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")
-                                    || obj.getValue().startsWith(SCIMv11Attributes.SCIM_USER_GROUPS + ".")) {
-                                localId = SCIMv11Attributes.SCIM_USER_GROUPS;
-                            }
-                            if (localId != null) {
-                                addAttribute(obj.toAttributes(localId),
-                                        attrs,
-                                        field.getType());
-                            }
-                        }
                     } else if (field.getGenericType().toString().contains(PhotoCanonicalType.class.getName())) {
                         if (field.getType().equals(List.class)) {
                             List<SCIMComplex<PhotoCanonicalType>> obj =
@@ -460,6 +434,45 @@ public class User implements BaseEntity {
                         addAttribute(SCIMUserAddress.class.cast(objInstance).toAttributes(),
                                 attrs,
                                 field.getType());
+                    }
+                } else if (field.getGenericType().toString().contains(SCIMDefault.class.getName())) {
+                    if (field.getType().equals(List.class)) {
+                        List<SCIMDefault> obj =
+                                new ArrayList<>((List<SCIMDefault>) objInstance);
+                        for (SCIMDefault sCIMDefault : obj) {
+                            String localId = null;
+                            if (StringUtil.isNotBlank(sCIMDefault.getValue())) {
+                                if (entitlements.contains(sCIMDefault)) {
+                                    localId = SCIMv11Attributes.SCIM_USER_ENTITLEMENTS;
+                                } else if (roles.contains(sCIMDefault)) {
+                                    localId = SCIMv11Attributes.SCIM_USER_ROLES;
+                                } else if (groups.contains(sCIMDefault)) {
+                                    localId = SCIMv11Attributes.SCIM_USER_GROUPS;
+                                }
+                            }
+                            if (localId != null) {
+                                addAttribute(sCIMDefault.toAttributes(localId),
+                                        attrs,
+                                        field.getType());
+                            }
+                        }
+                    } else {
+                        SCIMDefault obj = SCIMDefault.class.cast(objInstance);
+                        String localId = null;
+                        if (StringUtil.isNotBlank(obj.getValue())) {
+                            if (entitlements.contains(obj)) {
+                                localId = SCIMv11Attributes.SCIM_USER_ENTITLEMENTS;
+                            } else if (roles.contains(obj)) {
+                                localId = SCIMv11Attributes.SCIM_USER_ROLES;
+                            } else if (groups.contains(obj)) {
+                                localId = SCIMv11Attributes.SCIM_USER_GROUPS;
+                            }
+                        }
+                        if (localId != null) {
+                            addAttribute(obj.toAttributes(localId),
+                                    attrs,
+                                    field.getType());
+                        }
                     }
                 } else if (field.getGenericType().toString().contains(SCIMMeta.class.getName())) {
                     if (field.getType().equals(List.class)) {
@@ -653,13 +666,6 @@ public class User implements BaseEntity {
                 selected.setOperation(String.class.cast(value));
                 break;
             }
-
-            case "entitlements.default.value":
-                break;
-            case "entitlements.default.primary":
-                break;
-            case "entitlements.default.display":
-                break;
 
             case "phoneNumbers.work.value": {
                 SCIMComplex<PhoneNumberCanonicalType> selected = handleSCIMComplexObject(
@@ -1122,31 +1128,24 @@ public class User implements BaseEntity {
             }
 
             case "roles.default.value": {
-                SCIMComplex<DefaultCanonicalType> selected = handleSCIMComplexObject(
-                        DefaultCanonicalType.DEFAULT,
+                SCIMDefault selected = handleSCIMDefaultObject(
+                        String.class.cast(value),
                         this.roles);
                 selected.setValue(String.class.cast(value));
                 break;
             }
-            case "roles.default.display": {
-                SCIMComplex<DefaultCanonicalType> selected = handleSCIMComplexObject(
-                        DefaultCanonicalType.DEFAULT,
-                        this.roles);
-                selected.setDisplay(String.class.cast(value));
+            case "entitlements.default.value": {
+                SCIMDefault selected = handleSCIMDefaultObject(
+                        String.class.cast(value),
+                        this.entitlements);
+                selected.setValue(String.class.cast(value));
                 break;
             }
-            case "roles.default.primary": {
-                SCIMComplex<DefaultCanonicalType> selected = handleSCIMComplexObject(
-                        DefaultCanonicalType.DEFAULT,
-                        this.roles);
-                selected.setPrimary(Boolean.class.cast(value));
-                break;
-            }
-            case "roles.default.operation": {
-                SCIMComplex<DefaultCanonicalType> selected = handleSCIMComplexObject(
-                        DefaultCanonicalType.DEFAULT,
-                        this.roles);
-                selected.setOperation(String.class.cast(value));
+            case "x509Certificates.default.value": {
+                SCIMDefault selected = handleSCIMDefaultObject(
+                        String.class.cast(value),
+                        this.x509Certificates);
+                selected.setValue(String.class.cast(value));
                 break;
             }
 
@@ -1154,13 +1153,25 @@ public class User implements BaseEntity {
                 this.schemas.addAll(new ArrayList<>((List<String>) (Object) values));
                 break;
 
-            case "x509Certificates":
-                this.x509Certificates.addAll(new ArrayList<>((List<String>) (Object) values));
-                break;
-
             default:
                 break;
         }
+    }
+
+    @JsonIgnore
+    private SCIMDefault handleSCIMDefaultObject(final String value, final List<SCIMDefault> list) {
+        SCIMDefault selected = null;
+        for (SCIMDefault scimDefault : list) {
+            if (scimDefault.getValue().equals(value)) {
+                selected = scimDefault;
+                break;
+            }
+        }
+        if (selected == null) {
+            selected = new SCIMDefault();
+            list.add(selected);
+        }
+        return selected;
     }
 
     @JsonIgnore
@@ -1206,8 +1217,9 @@ public class User implements BaseEntity {
                 + ", preferredLanguage=" + preferredLanguage + ", locale=" + locale + ", timezone=" + timezone
                 + ", active=" + active + ", emails=" + emails + ", phoneNumbers=" + phoneNumbers + ", ims=" + ims
                 + ", photos=" + photos + ", groups=" + groups + ", roles=" + roles + ", addresses=" + addresses
-                + ", x509Certificates=" + x509Certificates + ", schemas=" + schemas + ", scimCustomAttributes="
-                + scimCustomAttributes + ", returnedCustomAttributes=" + returnedCustomAttributes + '}';
+                + ", x509Certificates=" + x509Certificates + ", schemas=" + schemas + ", entitlements=" + entitlements
+                + ", scimCustomAttributes=" + scimCustomAttributes + ", returnedCustomAttributes="
+                + returnedCustomAttributes + '}';
     }
 
 }

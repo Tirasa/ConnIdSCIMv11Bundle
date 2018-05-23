@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import net.tirasa.connid.bundles.scimv11.SCIMv11ConnectorConfiguration;
 import net.tirasa.connid.bundles.scimv11.dto.PagedResults;
 import net.tirasa.connid.bundles.scimv11.dto.SCIMAttribute;
 import net.tirasa.connid.bundles.scimv11.dto.SCIMSchema;
@@ -37,62 +38,41 @@ import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.identityconnectors.common.StringUtil;
 import org.identityconnectors.common.logging.Log;
-import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.common.security.SecurityUtil;
 
 public class SCIMv11Service {
 
     private static final Log LOG = Log.getLog(SCIMv11Service.class);
 
-    private final String baseAddress;
-
-    private final String username;
-
-    private final GuardedString password;
-
-    private final String bearer;
-
-    private final String accept;
-
-    private final String contentType;
-
-    private final String customAttributesJSON;
-
-    private final String updateMethod;
+    protected final SCIMv11ConnectorConfiguration config;
 
     public final static String RESPONSE_ERRORS = "Errors";
 
     public final static String RESPONSE_RESOURCES = "Resources";
 
-    public SCIMv11Service(
-            final String baseAddress,
-            final String username,
-            final GuardedString password,
-            final String accept,
-            final String contentType,
-            final String bearer,
-            final String customAttributesJSON,
-            final String updateMethod) {
-        this.baseAddress = baseAddress;
-        this.username = username;
-        this.password = password;
-        this.accept = accept;
-        this.contentType = contentType;
-        this.bearer = bearer;
-        this.customAttributesJSON = customAttributesJSON;
-        this.updateMethod = updateMethod;
+    public SCIMv11Service(final SCIMv11ConnectorConfiguration config) {
+        this.config = config;
     }
 
     protected WebClient getWebclient(final String path, final Map<String, String> params) {
-        WebClient webClient = WebClient.create(baseAddress,
-                username,
-                password == null ? null : SecurityUtil.decrypt(password),
-                null)
-                .type(accept)
-                .accept(contentType)
-                .path(path);
-        if (bearer != null) {
-            webClient.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearer);
+        WebClient webClient;
+        if (StringUtil.isNotBlank(config.getCliendId())
+                && StringUtil.isNotBlank(config.getClientSecret())
+                && StringUtil.isNotBlank(config.getAccessTokenBaseAddress())
+                && StringUtil.isNotBlank(config.getAccessTokenNodeId())) {
+            webClient = WebClient.create(config.getBaseAddress())
+                    .type(config.getAccept())
+                    .accept(config.getContentType())
+                    .path(path);
+            webClient.header(HttpHeaders.AUTHORIZATION, "Bearer " + generateToken());
+        } else {
+            webClient = WebClient.create(config.getBaseAddress(),
+                    config.getUsername(),
+                    config.getPassword() == null ? null : SecurityUtil.decrypt(config.getPassword()),
+                    null)
+                    .type(config.getAccept())
+                    .accept(config.getContentType())
+                    .path(path);
         }
 
         if (params != null) {
@@ -104,6 +84,37 @@ public class SCIMv11Service {
         return webClient;
     }
 
+    private String generateToken() {
+        WebClient webClient = WebClient
+                .create(config.getAccessTokenBaseAddress())
+                .type(config.getAccessTokenContentType())
+                .accept(config.getAccept());
+
+        String contentUri = new StringBuilder("&client_id=")
+                .append(config.getCliendId())
+                .append("&client_secret=")
+                .append(config.getClientSecret())
+                .append("&username=")
+                .append(config.getUsername())
+                .append("&password=")
+                .append(SecurityUtil.decrypt(config.getPassword()))
+                .toString();
+        String token = null;
+        try {
+            Response response = webClient.post(contentUri);
+            String responseAsString = response.readEntity(String.class);
+            JsonNode result = SCIMv11Utils.MAPPER.readTree(responseAsString);
+            if (result == null || !result.hasNonNull(config.getAccessTokenNodeId())) {
+                SCIMv11Utils.handleGeneralError("No access token found - " + responseAsString);
+            }
+            token = result.get(config.getAccessTokenNodeId()).textValue();
+        } catch (Exception ex) {
+            SCIMv11Utils.handleGeneralError("While obtaining authentication token", ex);
+        }
+
+        return token;
+    }
+
     protected JsonNode doGet(final WebClient webClient) {
         LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
         JsonNode result = null;
@@ -113,13 +124,15 @@ public class SCIMv11Service {
             String responseAsString = response.readEntity(String.class);
             checkServiceErrors(response);
             result = SCIMv11Utils.MAPPER.readTree(responseAsString);
-            checkServiceResultErrors(result, response);
-
+            if (result == null) {
+                LOG.ok("Empty result from GET request");
+                result = SCIMv11Utils.MAPPER.createObjectNode();
+            }
             if (result.isArray()
                     && (!result.has(RESPONSE_RESOURCES) || result.get(RESPONSE_RESOURCES).isNull())) {
                 SCIMv11Utils.handleGeneralError("Wrong response from GET request: " + responseAsString);
             }
-
+            checkServiceResultErrors(result, response);
         } catch (IOException ex) {
             LOG.error(ex, "While retrieving data from SCIM API");
         }
@@ -134,7 +147,7 @@ public class SCIMv11Service {
 
         try {
             // check custom attributes
-            JsonNode customAttributesNode = buildCustomAttributesNode(customAttributesJSON, user);
+            JsonNode customAttributesNode = buildCustomAttributesNode(config.getCustomAttributesJSON(), user);
             if (customAttributesNode != null) {
                 // add custom attributes to payload
                 JsonNode userNode = null;
@@ -150,19 +163,16 @@ public class SCIMv11Service {
                 payload = SCIMv11Utils.MAPPER.writeValueAsString(user);
             }
             response = webClient.post(payload);
-
-            if (response == null) {
-                SCIMv11Utils.handleGeneralError("While creating User - no response");
+            
+            checkServiceErrors(response);
+            String value = SCIMv11Attributes.USER_ATTRIBUTE_ID;
+            String responseAsString = response.readEntity(String.class);
+            JsonNode responseObj = SCIMv11Utils.MAPPER.readTree(responseAsString);
+            if (responseObj.hasNonNull(value)) {
+                user.setId(responseObj.get(value).textValue());
             } else {
-                String value = SCIMv11Attributes.USER_ATTRIBUTE_ID;
-                String responseAsString = response.readEntity(String.class);
-                JsonNode responseObj = SCIMv11Utils.MAPPER.readTree(responseAsString);
-                if (responseObj.hasNonNull(value)) {
-                    user.setId(responseObj.get(value).textValue());
-                } else {
-                    SCIMv11Utils.handleGeneralError(
-                            "While getting " + value + " value for created User - Response : " + responseAsString);
-                }
+                SCIMv11Utils.handleGeneralError(
+                        "While getting " + value + " value for created User - Response : " + responseAsString);
             }
         } catch (IOException ex) {
             SCIMv11Utils.handleGeneralError("While creating User", ex);
@@ -172,15 +182,15 @@ public class SCIMv11Service {
     protected JsonNode doUpdate(final User user, final WebClient webClient) {
         LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
         JsonNode result = null;
-        Response response = null;
+        Response response;
         String payload;
-        if (updateMethod.equalsIgnoreCase("PATCH")) {
+        if (config.getUpdateMethod().equalsIgnoreCase("PATCH")) {
             WebClient.getConfig(webClient).getRequestContext().put("use.async.http.conduit", true);
         }
 
         try {
             // check custom attributes
-            JsonNode customAttributesNode = buildCustomAttributesNode(customAttributesJSON, user);
+            JsonNode customAttributesNode = buildCustomAttributesNode(config.getCustomAttributesJSON(), user);
             if (customAttributesNode != null) {
                 // add custom attributes to payload
                 JsonNode userNode = null;
@@ -196,20 +206,15 @@ public class SCIMv11Service {
                 payload = SCIMv11Utils.MAPPER.writeValueAsString(user);
             }
 
-            if (updateMethod.equalsIgnoreCase("PATCH")) {
+            if (config.getUpdateMethod().equalsIgnoreCase("PATCH")) {
                 response = webClient.invoke("PATCH", payload);
             } else {
                 response = webClient.put(payload);
             }
 
-            if (response == null) {
-                SCIMv11Utils.handleGeneralError("While updating User - no response");
-            } else {
-                String responseAsString = response.readEntity(String.class);
-                checkServiceErrors(response);
-                result = SCIMv11Utils.MAPPER.readTree(responseAsString);
-                checkServiceResultErrors(result, response);
-            }
+            checkServiceErrors(response);
+            result = SCIMv11Utils.MAPPER.readTree(response.readEntity(String.class));
+            checkServiceResultErrors(result, response);
         } catch (IOException ex) {
             SCIMv11Utils.handleGeneralError("While updating User", ex);
         }
@@ -245,11 +250,14 @@ public class SCIMv11Service {
     }
 
     private void checkServiceErrors(final Response response) {
-        if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
+        if (response == null) {
+            SCIMv11Utils.handleGeneralError("While executing request - no response");
+        } else if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
             throw new NoSuchEntityException(response.readEntity(String.class));
         } else if (response.getStatus() != Status.OK.getStatusCode()
-                && response.getStatus() != Status.ACCEPTED.getStatusCode()) {
-            SCIMv11Utils.handleGeneralError("While executing GET request: " + response.readEntity(String.class));
+                && response.getStatus() != Status.ACCEPTED.getStatusCode()
+                && response.getStatus() != Status.CREATED.getStatusCode()) {
+            SCIMv11Utils.handleGeneralError("While executing request: " + response.readEntity(String.class));
         }
     }
 
@@ -360,8 +368,8 @@ public class SCIMv11Service {
     }
 
     protected void readCustomAttributes(final User user, final JsonNode node) {
-        if (StringUtil.isNotBlank(customAttributesJSON)) {
-            SCIMSchema scimSchema = extractSCIMSchemas(customAttributesJSON);
+        if (StringUtil.isNotBlank(config.getCustomAttributesJSON())) {
+            SCIMSchema scimSchema = extractSCIMSchemas(config.getCustomAttributesJSON());
 
             if (scimSchema != null && !scimSchema.getAttributes().isEmpty()) {
                 for (SCIMAttribute attribute : scimSchema.getAttributes()) {
