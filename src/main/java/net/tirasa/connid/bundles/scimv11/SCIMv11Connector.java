@@ -82,7 +82,7 @@ public class SCIMv11Connector implements
         this.configuration = (SCIMv11ConnectorConfiguration) configuration;
         this.configuration.validate();
 
-        client = new SCIMv11Client((SCIMv11ConnectorConfiguration) configuration);
+        client = new SCIMv11Client(this.configuration);
 
         LOG.ok("Connector {0} successfully inited", getClass().getName());
     }
