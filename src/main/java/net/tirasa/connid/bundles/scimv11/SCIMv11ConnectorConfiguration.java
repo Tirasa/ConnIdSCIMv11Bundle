@@ -56,7 +56,7 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
 
     private String clientSecret;
 
-    private String accessTokenNodeId;
+    private String accessTokenNodeId = "access_token";
 
     private String accessTokenBaseAddress;
 
