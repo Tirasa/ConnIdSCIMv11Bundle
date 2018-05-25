@@ -116,7 +116,7 @@ public class SCIMv11Service {
     }
 
     protected JsonNode doGet(final WebClient webClient) {
-        LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
+        LOG.ok("GET: {0}", webClient.getCurrentURI());
         JsonNode result = null;
 
         try {
@@ -141,7 +141,7 @@ public class SCIMv11Service {
     }
 
     protected void doCreate(final User user, final WebClient webClient) {
-        LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
+        LOG.ok("CREATE: {0}", webClient.getCurrentURI());
         Response response;
         String payload;
 
@@ -180,7 +180,7 @@ public class SCIMv11Service {
     }
 
     protected JsonNode doUpdate(final User user, final WebClient webClient) {
-        LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
+        LOG.ok("UPDATE: {0}", webClient.getCurrentURI());
         JsonNode result = null;
         Response response;
         String payload;
@@ -223,7 +223,7 @@ public class SCIMv11Service {
     }
 
     protected void doDelete(final String userId, final WebClient webClient) {
-        LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
+        LOG.ok("DELETE: {0}", webClient.getCurrentURI());
         int status = webClient.delete().getStatus();
         if (status != Status.NO_CONTENT.getStatusCode() && status != Status.OK.getStatusCode()) {
             throw new NoSuchEntityException(userId);
@@ -231,7 +231,7 @@ public class SCIMv11Service {
     }
 
     protected void doActivate(final String userId, final WebClient webClient) {
-        LOG.ok("webClient current URL : {0}", webClient.getCurrentURI());
+        LOG.ok("ACTIVATE: {0}", webClient.getCurrentURI());
         Response response;
         try {
             ObjectNode userIdNode = SCIMv11Utils.MAPPER.createObjectNode();
@@ -354,11 +354,11 @@ public class SCIMv11Service {
         return mainNode;
     }
 
-    public static SCIMSchema extractSCIMSchemas(final String node) {
+    public static SCIMSchema extractSCIMSchemas(final String json) {
         SCIMSchema customAttributesObj = null;
         try {
             customAttributesObj = SCIMv11Utils.MAPPER.readValue(
-                    node,
+                    json,
                     SCIMSchema.class);
         } catch (IOException ex) {
             LOG.error(ex, "While parsing custom attributes JSON object, taken from connector configuration");

@@ -39,6 +39,8 @@ public final class SCIMv11Attributes {
 
     public static final String USER_ATTRIBUTE_USERNAME = "userName";
 
+    public static final String USER_ATTRIBUTE_PASSWORD = "password";
+
     public static final String USER_ATTRIBUTE_ACTIVE = "active";
 
     public static final String SCIM_USER_NAME = "name";
@@ -56,6 +58,8 @@ public final class SCIMv11Attributes {
     public static final String SCIM_USER_ROLES = "roles";
 
     public static final String SCIM_USER_ENTITLEMENTS = "entitlements";
+
+    public static final String SCIM_USER_X509CERTIFICATES = "x509Certificates";
 
     public static final String SCIM_USER_GROUPS = "groups";
 
@@ -283,6 +287,14 @@ public final class SCIMv11Attributes {
             attributeBuilder.setName(name);
         }
         return attributeBuilder;
+    }
+
+    public static String defaultAttributesToGet() {
+        return USER_ATTRIBUTE_USERNAME
+                .concat(",")
+                .concat(USER_ATTRIBUTE_ID)
+                .concat(",")
+                .concat(SCIM_USER_NAME);
     }
 
 }

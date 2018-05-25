@@ -163,20 +163,22 @@ public class SCIMv11Connector implements
                     if (pagesSize != -1) {
                         if (StringUtil.isNotBlank(cookie)) {
                             PagedResults<User> pagedResult =
-                                    client.getAllUsers(Integer.valueOf(cookie), pagesSize);
+                                    client.getAllUsers(Integer.valueOf(cookie), pagesSize, attributesToGet);
                             users = pagedResult.getResources();
 
                             cookie = users.size() >= pagesSize
                                     ? String.valueOf(pagedResult.getStartIndex() + users.size())
                                     : null;
                         } else {
-                            PagedResults<User> pagedResult = client.getAllUsers(1, pagesSize);
+                            PagedResults<User> pagedResult = client.getAllUsers(1, pagesSize, attributesToGet);
                             users = pagedResult.getResources();
 
-                            cookie = String.valueOf(pagedResult.getStartIndex() + users.size());
+                            cookie = users.size() >= pagesSize
+                                    ? String.valueOf(pagedResult.getStartIndex() + users.size())
+                                    : null;
                         }
                     } else {
-                        users = client.getAllUsers();
+                        users = client.getAllUsers(attributesToGet);
                     }
                 } catch (Exception e) {
                     SCIMv11Utils.wrapGeneralError("While getting Users!", e);
@@ -202,7 +204,8 @@ public class SCIMv11Connector implements
                 } else if (Name.NAME.equals(key.getName())) {
                     try {
                         List<User> users =
-                                client.getAllUsers("username eq \"" + AttributeUtil.getAsStringValue(key) + "\"");
+                                client.getAllUsers("username eq \"" + AttributeUtil.getAsStringValue(key) + "\"",
+                                        attributesToGet);
                         if (!users.isEmpty()) {
                             result = users.get(0);
                         }

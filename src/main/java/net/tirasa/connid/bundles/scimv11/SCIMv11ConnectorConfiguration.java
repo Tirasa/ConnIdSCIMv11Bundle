@@ -124,7 +124,7 @@ public class SCIMv11ConnectorConfiguration extends AbstractConfiguration impleme
     }
 
     @ConfigurationProperty(displayMessageKey = "clientSecret.display",
-            helpMessageKey = "clientSecret.help", order = 7)
+            helpMessageKey = "clientSecret.help", order = 7, confidential = true)
     public String getClientSecret() {
         return clientSecret;
     }

@@ -544,7 +544,7 @@ public class SCIMv11ConnectorTests {
         // don't want to update addresses and emails
         user.getAddresses().clear();
         user.getEmails().clear();
-
+        
         LOG.warn("Update user: {0}", user);
         User updated = client.updateUser(user);
         assertNotNull(updated);
@@ -569,7 +569,7 @@ public class SCIMv11ConnectorTests {
 
         // want to update an attribute
         String oldName = user.getNickName();
-        String newName = "Updated nickname" + userId.substring(0, 10);
+        String newName = "Updated nickname" + UUID.randomUUID().toString().substring(0, 10);
         user.setNickName(newName);
         user.setMeta(null); // no need
 
@@ -596,14 +596,16 @@ public class SCIMv11ConnectorTests {
 
     private void readUsersServiceTest(final SCIMv11Client client)
             throws IllegalArgumentException, IllegalAccessException {
+        Set<String> attributesToGet = testAttributesToGet();
+
         // GET USER
-        List<User> users = client.getAllUsers();
+        List<User> users = client.getAllUsers(attributesToGet);
         assertNotNull(users);
         assertFalse(users.isEmpty());
         LOG.info("Found Users: {0}", users);
 
         // GET USERS
-        PagedResults<User> paged = client.getAllUsers(1, 1);
+        PagedResults<User> paged = client.getAllUsers(1, 1, attributesToGet);
         assertNotNull(paged);
         assertFalse(paged.getResources().isEmpty());
         assertTrue(paged.getResources().size() == 1);
@@ -612,7 +614,7 @@ public class SCIMv11ConnectorTests {
         assertEquals(paged.getItemsPerPage(), 1);
         LOG.info("Paged Users: {0}", paged);
 
-        PagedResults<User> paged2 = client.getAllUsers(2, 1);
+        PagedResults<User> paged2 = client.getAllUsers(2, 1, attributesToGet);
         assertNotNull(paged2);
         assertFalse(paged2.getResources().isEmpty());
         assertTrue(paged2.getResources().size() == 1);
@@ -656,7 +658,7 @@ public class SCIMv11ConnectorTests {
         // GET USER by userName
         List<User> users = client.getAllUsers(
                 SCIMv11Attributes.USER_ATTRIBUTE_USERNAME
-                + " eq \"" + user.getUserName() + "\"");
+                + " eq \"" + user.getUserName() + "\"", testAttributesToGet());
         assertNotNull(users);
         assertFalse(users.isEmpty());
         assertNotNull(users.get(0).getId());
@@ -668,7 +670,7 @@ public class SCIMv11ConnectorTests {
     private void deleteUsersServiceTest(final SCIMv11Client client) {
         PagedResults<User> users = client.getAllUsers(
                 SCIMv11Attributes.USER_ATTRIBUTE_USERNAME
-                + " sw \"" + SCIMv11ConnectorTestsUtils.VALUE_USERNAME + "\"", 1, 100);
+                + " sw \"" + SCIMv11ConnectorTestsUtils.VALUE_USERNAME + "\"", 1, 100, testAttributesToGet());
         assertNotNull(users);
         if (!users.getResources().isEmpty()) {
             for (User user : users.getResources()) {
@@ -692,6 +694,16 @@ public class SCIMv11ConnectorTests {
                 && !CUSTOM_ATTRIBUTES_KEYS.isEmpty()
                 && !CUSTOM_ATTRIBUTES_VALUES.isEmpty()
                 && !CUSTOM_ATTRIBUTES_UPDATE_VALUES.isEmpty();
+    }
+
+    private Set<String> testAttributesToGet() {
+        Set<String> attributesToGet = new HashSet<>();
+        attributesToGet.add(SCIMv11Attributes.USER_ATTRIBUTE_ID);
+        attributesToGet.add(SCIMv11Attributes.USER_ATTRIBUTE_USERNAME);
+        attributesToGet.add(SCIMv11Attributes.USER_ATTRIBUTE_PASSWORD);
+        attributesToGet.add(SCIMv11ConnectorTestsUtils.USER_ATTRIBUTE_FAMILY_NAME);
+        attributesToGet.add(SCIMv11ConnectorTestsUtils.USER_ATTRIBUTE_EMAIL_WORK_VALUE);
+        return attributesToGet;
     }
 
 }

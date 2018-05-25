@@ -19,11 +19,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.tirasa.connid.bundles.scimv11.SCIMv11ConnectorConfiguration;
 import net.tirasa.connid.bundles.scimv11.dto.PagedResults;
 import net.tirasa.connid.bundles.scimv11.dto.User;
+import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Attributes;
 import net.tirasa.connid.bundles.scimv11.utils.SCIMv11Utils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.identityconnectors.common.StringUtil;
@@ -39,21 +42,26 @@ public class SCIMv11Client extends SCIMv11Service {
 
     /**
      *
+     * @param attributesToGet
      * @return List of Users
      */
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(final Set<String> attributesToGet) {
         WebClient webClient = getWebclient("Users", null);
+        Map<String, String> params = new HashMap<>();
+        params.put("attributes", SCIMv11Utils.cleanAttributesToGet(attributesToGet, config.getCustomAttributesJSON()));
         return doGetAllUsers(webClient).getResources();
     }
 
     /**
      *
      * @param filterQuery to filter results
+     * @param attributesToGet
      * @return Filtered list of Users
      */
-    public List<User> getAllUsers(final String filterQuery) {
+    public List<User> getAllUsers(final String filterQuery, final Set<String> attributesToGet) {
         Map<String, String> params = new HashMap<>();
         params.put("filter", filterQuery);
+        params.put("attributes", SCIMv11Utils.cleanAttributesToGet(attributesToGet, config.getCustomAttributesJSON()));
         WebClient webClient = getWebclient("Users", params);
         return doGetAllUsers(webClient).getResources();
     }
@@ -62,14 +70,17 @@ public class SCIMv11Client extends SCIMv11Service {
      *
      * @param startIndex
      * @param count
+     * @param attributesToGet
      * @return Paged list of Users
      */
-    public PagedResults<User> getAllUsers(final Integer startIndex, final Integer count) {
+    public PagedResults<User> getAllUsers(final Integer startIndex, final Integer count,
+            final Set<String> attributesToGet) {
         Map<String, String> params = new HashMap<>();
         params.put("startIndex", String.valueOf(startIndex));
         if (count != null) {
             params.put("count", String.valueOf(count));
         }
+        params.put("attributes", SCIMv11Utils.cleanAttributesToGet(attributesToGet, config.getCustomAttributesJSON()));
         WebClient webClient = getWebclient("Users", params);
         return doGetAllUsers(webClient);
     }
@@ -79,15 +90,18 @@ public class SCIMv11Client extends SCIMv11Service {
      * @param filterQuery
      * @param startIndex
      * @param count
+     * @param attributesToGet
      * @return Paged and Filtered list of Users
      */
-    public PagedResults<User> getAllUsers(final String filterQuery, final Integer startIndex, final Integer count) {
+    public PagedResults<User> getAllUsers(final String filterQuery, final Integer startIndex, final Integer count,
+            final Set<String> attributesToGet) {
         Map<String, String> params = new HashMap<>();
         params.put("startIndex", String.valueOf(startIndex));
         if (count != null) {
             params.put("count", String.valueOf(count));
         }
         params.put("filter", filterQuery);
+        params.put("attributes", SCIMv11Utils.cleanAttributesToGet(attributesToGet, config.getCustomAttributesJSON()));
         WebClient webClient = getWebclient("Users", params);
         return doGetAllUsers(webClient);
     }
@@ -140,7 +154,9 @@ public class SCIMv11Client extends SCIMv11Service {
     }
 
     public boolean testService() {
-        return getAllUsers(1, 1) != null;
+        Set<String> attributesToGet = new HashSet<>();
+        attributesToGet.add(SCIMv11Attributes.USER_ATTRIBUTE_USERNAME);
+        return getAllUsers(1, 1, attributesToGet) != null;
     }
 
     private PagedResults<User> doGetAllUsers(final WebClient webClient) {
