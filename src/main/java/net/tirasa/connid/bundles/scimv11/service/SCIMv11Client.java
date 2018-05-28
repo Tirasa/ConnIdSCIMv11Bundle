@@ -161,9 +161,12 @@ public class SCIMv11Client extends SCIMv11Service {
 
     private PagedResults<User> doGetAllUsers(final WebClient webClient) {
         PagedResults<User> resources = null;
-        JsonNode node = null;
+        JsonNode node = doGet(webClient);
+        if (node == null) {
+            SCIMv11Utils.handleGeneralError("While retrieving Users from service");
+        }
+
         try {
-            node = doGet(webClient);
             resources = SCIMv11Utils.MAPPER.readValue(
                     node.toString(),
                     new TypeReference<PagedResults<User>>() {
@@ -172,8 +175,8 @@ public class SCIMv11Client extends SCIMv11Service {
             LOG.error(ex, "While converting from JSON to Users");
         }
 
-        if (resources == null || node == null) {
-            SCIMv11Utils.handleGeneralError("While retrieving users from service");
+        if (resources == null) {
+            SCIMv11Utils.handleGeneralError("While retrieving Users from service");
         } else {
             // check custom attributes
             if (!resources.getResources().isEmpty()) {
@@ -186,9 +189,12 @@ public class SCIMv11Client extends SCIMv11Service {
 
     private User doGetUser(final WebClient webClient) {
         User user = null;
-        JsonNode node = null;
+        JsonNode node = doGet(webClient);
+        if (node == null) {
+            SCIMv11Utils.handleGeneralError("While retrieving User from service");
+        }
+
         try {
-            node = doGet(webClient);
             user = SCIMv11Utils.MAPPER.readValue(
                     node.toString(),
                     User.class);
@@ -196,7 +202,7 @@ public class SCIMv11Client extends SCIMv11Service {
             LOG.error(ex, "While converting from JSON to User");
         }
 
-        if (user == null || node == null) {
+        if (user == null) {
             SCIMv11Utils.handleGeneralError("While retrieving user from service after create");
         } else {
             // check custom attributes
@@ -217,11 +223,17 @@ public class SCIMv11Client extends SCIMv11Service {
         }
 
         User updated = null;
+        JsonNode node = doUpdate(user, getWebclient("Users", null)
+                .path(user.getId()));
+        if (node == null) {
+            SCIMv11Utils.handleGeneralError("While running update on service");
+        }
+
         try {
             updated = SCIMv11Utils.MAPPER.readValue(
-                    doUpdate(user, getWebclient("Users", null)
-                            .path(user.getId())).toString(),
-                    User.class);
+                    node.toString(),
+                    User.class
+            );
         } catch (IOException ex) {
             LOG.error(ex, "While converting from JSON to User");
         }
