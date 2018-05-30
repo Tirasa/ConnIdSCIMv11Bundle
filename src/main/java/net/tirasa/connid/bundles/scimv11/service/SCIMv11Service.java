@@ -143,7 +143,7 @@ public class SCIMv11Service {
     protected void doCreate(final User user, final WebClient webClient) {
         LOG.ok("CREATE: {0}", webClient.getCurrentURI());
         Response response;
-        String payload;
+        String payload = null;
 
         try {
             // check custom attributes
@@ -163,7 +163,7 @@ public class SCIMv11Service {
                 payload = SCIMv11Utils.MAPPER.writeValueAsString(user);
             }
             response = webClient.post(payload);
-            
+
             checkServiceErrors(response);
             String value = SCIMv11Attributes.USER_ATTRIBUTE_ID;
             String responseAsString = response.readEntity(String.class);
@@ -171,10 +171,12 @@ public class SCIMv11Service {
             if (responseObj.hasNonNull(value)) {
                 user.setId(responseObj.get(value).textValue());
             } else {
+                LOG.error("CREATE payload {0}: ", payload);
                 SCIMv11Utils.handleGeneralError(
                         "While getting " + value + " value for created User - Response : " + responseAsString);
             }
         } catch (IOException ex) {
+            LOG.error("CREATE payload {0}: ", payload);
             SCIMv11Utils.handleGeneralError("While creating User", ex);
         }
     }
@@ -183,7 +185,7 @@ public class SCIMv11Service {
         LOG.ok("UPDATE: {0}", webClient.getCurrentURI());
         JsonNode result = null;
         Response response;
-        String payload;
+        String payload = null;
         if (config.getUpdateMethod().equalsIgnoreCase("PATCH")) {
             WebClient.getConfig(webClient).getRequestContext().put("use.async.http.conduit", true);
         }
@@ -216,6 +218,7 @@ public class SCIMv11Service {
             result = SCIMv11Utils.MAPPER.readTree(response.readEntity(String.class));
             checkServiceResultErrors(result, response);
         } catch (IOException ex) {
+            LOG.error("UPDATE payload {0}: ", payload);
             SCIMv11Utils.handleGeneralError("While updating User", ex);
         }
 
@@ -252,12 +255,15 @@ public class SCIMv11Service {
     private void checkServiceErrors(final Response response) {
         if (response == null) {
             SCIMv11Utils.handleGeneralError("While executing request - no response");
-        } else if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
-            throw new NoSuchEntityException(response.readEntity(String.class));
+        }
+
+        String responseAsString = response.readEntity(String.class);
+        if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
+            throw new NoSuchEntityException(responseAsString);
         } else if (response.getStatus() != Status.OK.getStatusCode()
                 && response.getStatus() != Status.ACCEPTED.getStatusCode()
                 && response.getStatus() != Status.CREATED.getStatusCode()) {
-            SCIMv11Utils.handleGeneralError("While executing request: " + response.readEntity(String.class));
+            SCIMv11Utils.handleGeneralError("While executing request: " + responseAsString);
         }
     }
 
