@@ -140,9 +140,9 @@ public class SCIMv11Connector implements
         Attribute key = null;
         if (query instanceof EqualsFilter) {
             Attribute filterAttr = ((EqualsFilter) query).getAttribute();
-            if (filterAttr instanceof Uid) {
-                key = filterAttr;
-            } else if (ObjectClass.ACCOUNT.equals(objectClass) || ObjectClass.GROUP.equals(objectClass)) {
+            if (filterAttr instanceof Uid
+                    || ObjectClass.ACCOUNT.equals(objectClass)
+                    || ObjectClass.GROUP.equals(objectClass)) {
                 key = filterAttr;
             }
         }
@@ -356,7 +356,7 @@ public class SCIMv11Connector implements
                         ? accessor.getPassword()
                         : accessor.findGuardedString(OperationalAttributes.PASSWORD_NAME);
                 if (password == null) {
-                    LOG.warn("Missing password attribute");
+                    LOG.info("No password to update");
                 } else {
                     String decryptedPassword = SecurityUtil.decrypt(password);
                     user.setPassword(decryptedPassword);

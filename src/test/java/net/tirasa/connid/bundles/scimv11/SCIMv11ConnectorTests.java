@@ -164,12 +164,12 @@ public class SCIMv11ConnectorTests {
 
     @Test
     public void validate() {
-        newFacade().validate();
+        connector.validate();
     }
 
     @Test
     public void schema() {
-        Schema schema = newFacade().schema();
+        Schema schema = connector.schema();
         assertEquals(1, schema.getObjectClassInfo().size());
 
         boolean accountFound = false;
@@ -284,7 +284,6 @@ public class SCIMv11ConnectorTests {
 
     @Test
     public void crud() {
-        ConnectorFacade connector = newFacade();
         SCIMv11Client client = newClient();
 
         String testUser = null;

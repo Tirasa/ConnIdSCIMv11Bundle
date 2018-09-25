@@ -72,7 +72,6 @@ public final class SCIMv11Attributes {
     public static final String SCIM_SCHEMA_EXTENSION = "extension";
 
     public static Schema buildSchema(final String customAttributes) {
-
         SchemaBuilder builder = new SchemaBuilder(SCIMv11Connector.class);
 
         ObjectClassInfoBuilder userBuilder = new ObjectClassInfoBuilder().setType(ObjectClass.ACCOUNT_NAME);
@@ -260,12 +259,13 @@ public final class SCIMv11Attributes {
 
     public static AttributeBuilder buildAttributeFromClassField(final Field field,
             final Object that) throws IllegalArgumentException, IllegalAccessException {
+
         return doBuildAttributeFromClassField(field.get(that), field.getName(), field.getType());
     }
 
-    public static AttributeBuilder doBuildAttributeFromClassField(final Object value,
-            final String name,
+    public static AttributeBuilder doBuildAttributeFromClassField(final Object value, final String name,
             final Class<?> clazz) {
+
         AttributeBuilder attributeBuilder = new AttributeBuilder();
         if (value != null) {
             if (clazz == boolean.class || clazz == Boolean.class) {
