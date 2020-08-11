@@ -42,6 +42,8 @@ public final class SCIMv11Attributes {
     public static final String USER_ATTRIBUTE_PASSWORD = "password";
 
     public static final String USER_ATTRIBUTE_ACTIVE = "active";
+    
+    public static final String USER_ATTRIBUTE_EXTERNAL_ID = "externalId";
 
     public static final String SCIM_USER_NAME = "name";
 

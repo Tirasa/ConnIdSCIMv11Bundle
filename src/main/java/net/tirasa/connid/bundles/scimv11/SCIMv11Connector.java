@@ -241,11 +241,14 @@ public class SCIMv11Connector implements
             if (username == null) {
                 username = accessor.findString(Name.NAME);
             }
+            String externalId = accessor.findString(SCIMv11Attributes.USER_ATTRIBUTE_EXTERNAL_ID);
+
             GuardedString password = accessor.findGuardedString(OperationalAttributes.PASSWORD_NAME);
             Attribute status = accessor.find(OperationalAttributes.ENABLE_NAME);
 
             try {
                 user.setUserName(username);
+                user.setExternalId(externalId != null ? externalId : username);
 
                 if (password == null) {
                     LOG.warn("Missing password attribute");
