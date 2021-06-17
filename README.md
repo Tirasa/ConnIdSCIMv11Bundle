@@ -3,7 +3,9 @@ ConnIdSCIMv11Bundle
 
 The SCIM 1.1 bundle is part of the [ConnId](http://connid.tirasa.net) project.
 
-<a href="https://travis-ci.org/Tirasa/ConnIdSCIMv11Bundle"><img src="https://api.travis-ci.org/Tirasa/ConnIdSCIMv11Bundle.png"/></a>
+<a href="https://github.com/Tirasa/ConnIdSCIMv11Bundle/actions/workflows/ci.yml">
+  <img src="https://github.com/Tirasa/ConnIdSCIMv11Bundle/actions/workflows/ci.yml/badge.svg"/>
+</a>
 <a href="#">
   <img src="https://img.shields.io/maven-central/v/net.tirasa.connid.bundles/net.tirasa.connid.bundles.scimv11.svg"/>
 </a>

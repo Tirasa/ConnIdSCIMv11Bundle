@@ -58,8 +58,8 @@
   </issueManagement>
 
   <ciManagement>
-    <system>Travis CI</system>
-    <url>https://travis-ci.org/Tirasa/ConnIdSCIM1Bundle</url>
+    <system>GitHub Workflow</system>
+    <url>https://github.com/Tirasa/ConnIdSCIMv11Bundle/actions</url>
   </ciManagement>
 
   <mailingLists>
