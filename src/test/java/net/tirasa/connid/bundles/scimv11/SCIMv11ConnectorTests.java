@@ -15,13 +15,13 @@
  */
 package net.tirasa.connid.bundles.scimv11;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,8 +67,8 @@ import org.identityconnectors.framework.common.objects.Uid;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.identityconnectors.test.common.TestHelpers;
 import org.identityconnectors.test.common.ToListResultsHandler;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class SCIMv11ConnectorTests {
 
@@ -90,7 +90,7 @@ public class SCIMv11ConnectorTests {
 
     private static final List<String> CUSTOM_ATTRIBUTES_UPDATE_VALUES = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpConf() throws IOException {
         PROPS.load(SCIMv11ConnectorTests.class.getResourceAsStream(
                 "/net/tirasa/connid/bundles/scimv11/auth.properties"));
@@ -214,13 +214,7 @@ public class SCIMv11ConnectorTests {
     @Test
     public void pagedSearch() {
         final List<ConnectorObject> results = new ArrayList<>();
-        final ResultsHandler handler = new ResultsHandler() {
-
-            @Override
-            public boolean handle(final ConnectorObject co) {
-                return results.add(co);
-            }
-        };
+        final ResultsHandler handler = results::add;
 
         final OperationOptionsBuilder oob = new OperationOptionsBuilder();
         oob.setAttributesToGet("userName");
@@ -425,13 +419,8 @@ public class SCIMv11ConnectorTests {
             final List<ConnectorObject> found = new ArrayList<>();
             connector.search(ObjectClass.ACCOUNT,
                     new EqualsFilter(new Name(user.getUserName())),
-                    new ResultsHandler() {
-
-                @Override
-                public boolean handle(final ConnectorObject obj) {
-                    return found.add(obj);
-                }
-            }, new OperationOptionsBuilder().setAttributesToGet(CUSTOM_ATTRIBUTES_KEYS).build());
+                    found::add,
+                    new OperationOptionsBuilder().setAttributesToGet(CUSTOM_ATTRIBUTES_KEYS).build());
             assertEquals(found.size(), 1);
             assertNotNull(found.get(0));
             assertNotNull(found.get(0).getName());
@@ -543,7 +532,7 @@ public class SCIMv11ConnectorTests {
         // don't want to update addresses and emails
         user.getAddresses().clear();
         user.getEmails().clear();
-        
+
         LOG.warn("Update user: {0}", user);
         User updated = client.updateUser(user);
         assertNotNull(updated);
