@@ -20,6 +20,10 @@ ConnIdSCIMv11Bundle
 
 The SCIM 1.1 bundle is part of the [ConnId](http://connid.tirasa.net) project.
 
+| :warning: DEPRECATION          |
+|:---------------------------|
+| The SCIM 1.1 connector was deprecated in favor of the [new SCIM connector](https://github.com/Tirasa/ConnIdSCIMBundle), which supports both SCIM 1.1 and 2.0 specifications. |
+
 <a href="https://github.com/Tirasa/ConnIdSCIMv11Bundle/actions/workflows/ci.yml">
   <img src="https://github.com/Tirasa/ConnIdSCIMv11Bundle/actions/workflows/ci.yml/badge.svg"/>
 </a>
