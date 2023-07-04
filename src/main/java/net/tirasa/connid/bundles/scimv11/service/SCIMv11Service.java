@@ -380,7 +380,7 @@ public class SCIMv11Service {
             if (scimSchema != null && !scimSchema.getAttributes().isEmpty()) {
                 for (SCIMAttribute attribute : scimSchema.getAttributes()) {
                     List<JsonNode> foundWithSchemaAsKey = node.findValues(attribute.getSchema());
-                    if (!foundWithSchemaAsKey.isEmpty()) {
+                    if (!foundWithSchemaAsKey.isEmpty() && foundWithSchemaAsKey.get(0).has(attribute.getName())) {
                         List<Object> values = new ArrayList<>();
                         values.add(foundWithSchemaAsKey.get(0).get(attribute.getName()).textValue());
                         user.getReturnedCustomAttributes().put(
